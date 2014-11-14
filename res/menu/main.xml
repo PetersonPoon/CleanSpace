@@ -1,0 +1,23 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.cleanspace.MainActivity" >
+
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_settings"/>
+    <item
+        android:id="@+id/add_button"
+        android:icon="@drawable/ic_menu_btn_add"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/add_button"/>
+    <item
+        android:id="@+id/refresh_button"
+        android:icon="@drawable/ic_menu_refresh"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/refresh_button"/>
+
+</menu>
