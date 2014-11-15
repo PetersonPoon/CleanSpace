@@ -1,8 +1,14 @@
 package com.example.cleanspace;
 
+import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
+import static com.example.cleanspace.DetailsActivity.SENSORNAME;
+
+import java.io.File;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,20 +23,33 @@ import android.view.View;
  * 
  */
 public class MainActivity extends Activity {
+	
+	String sensorTitle = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		String cleanspacepath = Environment.getExternalStorageDirectory().toString();
+		cleanspacepath = cleanspacepath + "/Android/data/com.example.cleanspace/files";
+		File f = new File(getExternalFilesDir(null), "");
+		File file[] = f.listFiles();
+		
+		for(int i = 0; i< file.length; i++){
+			sensorTitle = file[i].getName();
+			 
+		}
+	
+				
 
 	}
 
 	// Click details button to open new activity
 	public void openDetailsActivity(View view) {
 		Intent detailsIntent = new Intent(MainActivity.this,
-				DetailsActivity.class);
-		// For future when we need to pass data to DetailsActivity:
-		// detailsIntent.putExtra(name, value);
+				DetailsActivity.class);			
+		detailsIntent.putExtra(SENSORNAME, sensorTitle);
 		MainActivity.this.startActivity(detailsIntent);
 	}
 
