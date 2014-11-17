@@ -35,7 +35,7 @@ public class DetailsActivity extends Activity {
 	public double DustDensity;
 	
 	public String ODSStatus; 
-	
+	public String sensorFileName = "";
 	String newSensorTitle = "Furnace Filter";
 	static String testName = "qwerty";
 	public static final String SENSORNAME = "temp";
@@ -46,67 +46,7 @@ public class DetailsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
 		
-		
-		String temp = "";
-		String newSampleArea = "";
-		String tempSampleArea = "";
-		int newLinePassed = 0;
-		
-		String sensorFileName = "";
-		Intent intent = getIntent();
-		if(null != intent){
-			sensorFileName = intent.getStringExtra(SENSORNAME);
-		}
-		
-		if(isExternalStorageReadable()){			
-			File FileExists = new File(getExternalFilesDir(null), sensorFileName);
-			InputStream fis = null;
-			
-			try {				
-			
-				fis = new BufferedInputStream(new FileInputStream(FileExists));
-				int t = 0;	
-				while((t = fis.read()) != -1){
-					
-					if(t != 10 && newLinePassed == 0){
-						temp = temp + Character.toString((char)t);						
-					}else if (t == 10){
-						newLinePassed = 1;
-					}else if (newLinePassed ==1){						
-						tempSampleArea = tempSampleArea + Character.toString((char)t);
-					}
-				}
-				newLinePassed = 0;
-				fis.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-		else{
-			 newSensorTitle = "Furnace Sensor";
-			 newSampleArea = "123";
-		}
-		
-		if (temp != null){
-			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-			sensorTitle.setText(temp);
-		}else if(newSensorTitle != ""){
-			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-			sensorTitle.setText(newSensorTitle);
-			
-		}
-		
-		
-		if (tempSampleArea != null){
-			TextView sampleArea = (TextView) findViewById(R.id.current_area);
-			sampleArea.setText(tempSampleArea);
-		}
-		else if(newSampleArea != null){	
-			TextView sampleArea = (TextView) findViewById(R.id.current_area);
-			sampleArea.setText(newSampleArea);
-		}
+		LoadSensorDetails();	
 		
 	}
 
@@ -150,6 +90,7 @@ public class DetailsActivity extends Activity {
 			CalcLevel(value);
 			UpdateStatus(DustDensity);
 			myText.setText(String.valueOf(ODSStatus));
+			LoadSensorDetails();
 			return true;
 		} else if (id == R.id.edit_button) {
 			Intent editIntent = new Intent(DetailsActivity.this,
@@ -233,6 +174,69 @@ public class DetailsActivity extends Activity {
 			return true;
 		}
 		return false;
+	}
+	
+	public void LoadSensorDetails(){
+		String newTitle = "";
+		String newSampleArea = "";
+		String tempSampleArea = "";
+		int newLinePassed = 0;
+		
+		
+		Intent intent = getIntent();
+		if(null != intent){
+			sensorFileName = intent.getStringExtra(SENSORNAME);
+		}
+		
+		if(isExternalStorageReadable()){			
+			File FileExists = new File(getExternalFilesDir(null), sensorFileName);
+			InputStream fis = null;
+			
+			try {				
+			
+				fis = new BufferedInputStream(new FileInputStream(FileExists));
+				int t = 0;	
+				while((t = fis.read()) != -1){
+					
+					if(t != 10 && newLinePassed == 0){
+						newTitle = newTitle + Character.toString((char)t);						
+					}else if (t == 10){
+						newLinePassed = 1;
+					}else if (newLinePassed ==1){						
+						tempSampleArea = tempSampleArea + Character.toString((char)t);
+					}
+				}
+				newLinePassed = 0;
+				fis.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+		}
+		else{
+			 newSensorTitle = "Furnace Sensor";
+			 newSampleArea = "123";
+		}
+		
+		if (newTitle != null){
+			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
+			sensorTitle.setText(newTitle);
+		}else if(newSensorTitle != ""){
+			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
+			sensorTitle.setText(newSensorTitle);
+			
+		}
+		
+		
+		if (tempSampleArea != null){
+			TextView sampleArea = (TextView) findViewById(R.id.current_area);
+			sampleArea.setText(tempSampleArea);
+		}
+		else if(newSampleArea != null){	
+			TextView sampleArea = (TextView) findViewById(R.id.current_area);
+			sampleArea.setText(newSampleArea);
+		}
 	}
 	
 }
