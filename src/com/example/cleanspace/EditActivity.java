@@ -1,29 +1,15 @@
 package com.example.cleanspace;
 
-import java.io.FileOutputStream;
-
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.io.BufferedReader;
 
 import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
@@ -31,9 +17,7 @@ public class EditActivity extends Activity {
 	public static final String EDITEDTITLE = "temp";
 	public static final String EDITEDSAMPLEAREA = "123";
 
-	String newSensorTitle = "Furnace Filter";
-	static String testName = "qwerty";
-	String oldSensorTitle = "";
+	String oldSensorTitle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +55,7 @@ public class EditActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -78,68 +63,43 @@ public class EditActivity extends Activity {
 
 	public void saveEditActivity(View view) {
 		EditText newSensorTitle = (EditText) findViewById(R.id.sensor_title);
-		String newTitle = newSensorTitle.getText().toString();
+		String newTitle = newSensorTitle.getText().toString().trim();
 
 		EditText sampleArea = (EditText) findViewById(R.id.current_area);
-		String newSampleArea = sampleArea.getText().toString();
+		String newSampleArea = sampleArea.getText().toString().trim();
 
-		String FileName = oldSensorTitle + ".txt";// getExternalFilesDir();
-		File OpenSaveFile = new File(getExternalFilesDir(null), FileName);
+		String fileName = oldSensorTitle + ".txt";// getExternalFilesDir();
+		File openSaveFile = new File(getExternalFilesDir(null), fileName);
 
 		File renameSaveFile = new File(getExternalFilesDir(null), newTitle
 				+ ".txt");
-		if (OpenSaveFile.exists()) {
-			OpenSaveFile.renameTo(renameSaveFile);
 
-		}
-		if (isExternalStorageWriteable()) {
-			// FileOutputStream fos;
-
-			try {
-				OutputStream fos = new FileOutputStream(renameSaveFile);
-				if (newSensorTitle != null) {
-					fos.write(newTitle.getBytes());
-					fos.write('\n');
-				}
-
-				if (newSampleArea != null) {
-					fos.write('\n');
-					fos.write(newSampleArea.getBytes());
-
-					Toast.makeText(getApplicationContext(),
-							"Sensor has been successfully edited",
-							Toast.LENGTH_SHORT).show();
-				}
-				fos.close();
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (newTitle == null || newTitle.isEmpty()) {
+			Toast.makeText(getApplicationContext(),
+					"Please enter a valid name", Toast.LENGTH_SHORT).show();
+		} else if (newSampleArea == null || newSampleArea.isEmpty()) {
+			Toast.makeText(getApplicationContext(),
+					"Please enter a valid area", Toast.LENGTH_SHORT).show();
+		} else {
+			if (openSaveFile.exists()) {
+				openSaveFile.renameTo(renameSaveFile);
 			}
 
+			boolean successfulWrite = FileHelper.writeToFile(renameSaveFile,
+					newSampleArea);
+			if (successfulWrite) {
+				Toast.makeText(getApplicationContext(),
+						"Sensor has been successfully edited",
+						Toast.LENGTH_SHORT).show();
+
+				Intent detailsIntent = new Intent(EditActivity.this,
+						DetailsActivity.class);
+
+				detailsIntent.putExtra(SENSORFILENAME, newTitle + ".txt");
+
+				EditActivity.this.startActivity(detailsIntent);
+			}
 		}
 
-		Intent detailsIntent = new Intent(EditActivity.this,
-				DetailsActivity.class);
-
-		detailsIntent.putExtra(SENSORFILENAME, newTitle + ".txt");
-		EditActivity.this.startActivity(detailsIntent);
-	}
-
-	public boolean isExternalStorageWriteable() {
-		String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state)) {
-			return true;
-		}
-		return false;
-	}
-
-	public boolean isExternalStorageReadable() {
-		String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state)
-				|| Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			return true;
-		}
-		return false;
 	}
 }

@@ -1,30 +1,24 @@
 package com.example.cleanspace;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.Environment;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.TextView;
+import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
+import static com.example.cleanspace.EditActivity.EDITEDTITLE;
 
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.UnknownHostException;
-import java.net.MalformedURLException;
-
-import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.BufferedReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
-import static com.example.cleanspace.EditActivity.EDITEDTITLE; //@string/first_sensor_details"
-import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class DetailsActivity extends Activity {
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
@@ -36,8 +30,6 @@ public class DetailsActivity extends Activity {
 
 	public String ODSStatus;
 
-	String newSensorTitle = "Furnace Filter";
-	static String testName = "qwerty";
 	public static final String SENSORFILENAME = "temp";
 
 	@Override
@@ -45,65 +37,28 @@ public class DetailsActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
 
-		String temp = "";
-		String newSampleArea = "";
-		String tempSampleArea = "";
-		int newLinePassed = 0;
-
 		String sensorFileName = "";
 		Intent intent = getIntent();
 		if (null != intent) {
 			sensorFileName = intent.getStringExtra(SENSORFILENAME);
-		}
-
-		if (isExternalStorageReadable()) {
-
-			File FileExists = new File(getExternalFilesDir(null),
-					sensorFileName);
+			File readFile = new File(getExternalFilesDir(null), sensorFileName);
 			InputStream fis = null;
 
-			try {
+			String readData = FileHelper.readFromFile(readFile, fis);
+			String[] sensorData = readData.split(",");
 
-				fis = new BufferedInputStream(new FileInputStream(FileExists));
-				int t = 0;
-				while ((t = fis.read()) != -1) {
-
-					if (t != 10 && newLinePassed == 0) {
-						temp = temp + Character.toString((char) t);
-					} else if (t == 10) {
-						newLinePassed = 1;
-					} else if (newLinePassed == 1) {
-						tempSampleArea = tempSampleArea
-								+ Character.toString((char) t);
-					}
-				}
-				newLinePassed = 0;
-				fis.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (sensorData != null) {
+				TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
+				sensorTitle.setText(sensorData[0]);
+				TextView sampleArea = (TextView) findViewById(R.id.current_area);
+				sampleArea.setText(sensorData[1]);
 			}
 
 		} else {
-			newSensorTitle = "Furnace Sensor";
-			newSampleArea = "123";
-		}
+			Toast.makeText(getApplicationContext(),
+					"Sensor data not able to load, Please try again",
+					Toast.LENGTH_SHORT).show();
 
-		if (temp != null) {
-			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-			sensorTitle.setText(temp);
-		} else if (newSensorTitle != "") {
-			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-			sensorTitle.setText(newSensorTitle);
-
-		}
-
-		if (tempSampleArea != null) {
-			TextView sampleArea = (TextView) findViewById(R.id.current_area);
-			sampleArea.setText(tempSampleArea);
-		} else if (newSampleArea != null) {
-			TextView sampleArea = (TextView) findViewById(R.id.current_area);
-			sampleArea.setText(newSampleArea);
 		}
 
 	}
@@ -227,14 +182,4 @@ public class DetailsActivity extends Activity {
 		} else
 			ODSStatus = "Good";
 	}
-
-	public boolean isExternalStorageReadable() {
-		String state = Environment.getExternalStorageState();
-		if (Environment.MEDIA_MOUNTED.equals(state)
-				|| Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-			return true;
-		}
-		return false;
-	}
-
 }

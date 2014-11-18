@@ -8,7 +8,6 @@ import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -59,7 +58,6 @@ public class MainActivity extends Activity {
 		for (int i = 0; i < file.length; i++) {
 			Button sensorButton = new Button(this);
 
-			sensorButton.setId(i);
 			sensorFileTitle = file[i].getName();
 
 			String sensorTitle = sensorFileTitle.substring(0,
