@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 
@@ -19,14 +20,13 @@ import android.widget.LinearLayout;
  * This activity will display the general details of our one sensor Details
  * include: Name, dust condition (good/bad)
  * 
- * FUTURE: Display details on more than one sensor
  * 
  * @author echiang
  * 
  */
 public class MainActivity extends Activity {
-
-	String sensorTitle = "";
+	View.OnClickListener listeners[];
+	String sensorFileTitle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +34,22 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		populateButtons();
 	}
+
+	private class newClick implements OnClickListener {
+		private String btnString;
+
+		public newClick(String currentButton) {
+			btnString = currentButton + ".txt";
+		}
+
+		public void onClick(View view) {
+			Intent detailsIntent = new Intent(MainActivity.this,
+					DetailsActivity.class);
+			// view.
+			detailsIntent.putExtra(SENSORFILENAME, btnString);
+			MainActivity.this.startActivity(detailsIntent);
+		}
+	};
 
 	private void populateButtons() {
 
@@ -44,35 +60,20 @@ public class MainActivity extends Activity {
 			Button sensorButton = new Button(this);
 
 			sensorButton.setId(i);
-			sensorTitle = file[i].getName();
+			sensorFileTitle = file[i].getName();
+
+			String sensorTitle = sensorFileTitle.substring(0,
+					sensorFileTitle.lastIndexOf('.'));
+
 			sensorButton.setText(sensorTitle);
 
 			LinearLayout ll = (LinearLayout) findViewById(R.id.button_layout);
 			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
 					LayoutParams.WRAP_CONTENT);
+
+			sensorButton.setOnClickListener(new newClick(sensorTitle));
 			ll.addView(sensorButton, lp);
-
-			sensorButton.setOnClickListener(new View.OnClickListener() {
-
-				@Override
-				public void onClick(View view) {
-					Intent detailsIntent = new Intent(MainActivity.this,
-							DetailsActivity.class);
-					detailsIntent.putExtra(SENSORFILENAME, sensorTitle);
-					Log.d("here", sensorTitle);
-					MainActivity.this.startActivity(detailsIntent);
-				}
-
-			});
 		}
-	}
-
-	// Click details button to open new activity
-	public void openDetailsActivity(View view) {
-		Intent detailsIntent = new Intent(MainActivity.this,
-				DetailsActivity.class);
-		detailsIntent.putExtra(SENSORFILENAME, sensorTitle);
-		MainActivity.this.startActivity(detailsIntent);
 	}
 
 	@Override
