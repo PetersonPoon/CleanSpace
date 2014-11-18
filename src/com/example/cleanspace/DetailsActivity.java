@@ -29,51 +29,52 @@ import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
 public class DetailsActivity extends Activity {
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
 	private Boolean mStop = false;
-	
+
 	public double value;
 	public double VoltageMap;
 	public double DustDensity;
-	
-	public String ODSStatus; 
-	
+
+	public String ODSStatus;
+
 	String newSensorTitle = "Furnace Filter";
 	static String testName = "qwerty";
-	public static final String SENSORNAME = "temp";
-	
-	
+	public static final String SENSORFILENAME = "temp";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
-		
-		
+
 		String temp = "";
 		String newSampleArea = "";
 		String tempSampleArea = "";
 		int newLinePassed = 0;
-		
+
 		String sensorFileName = "";
 		Intent intent = getIntent();
-		if(null != intent){
-			sensorFileName = intent.getStringExtra(SENSORNAME);
+		if (null != intent) {
+			sensorFileName = intent.getStringExtra(SENSORFILENAME);
 		}
-		
-		if(isExternalStorageReadable()){			
-			File FileExists = new File(getExternalFilesDir(null), sensorFileName);
+
+		if (isExternalStorageReadable()) {
+
+			File FileExists = new File(getExternalFilesDir(null),
+					sensorFileName);
 			InputStream fis = null;
-			
-			try {				
-			
+
+			try {
+
 				fis = new BufferedInputStream(new FileInputStream(FileExists));
-				int t = 0;	
-				while((t = fis.read()) != -1){
-					
-					if(t != 10 && newLinePassed == 0){
-						temp = temp + Character.toString((char)t);						
-					}else if (t == 10){
+				int t = 0;
+				while ((t = fis.read()) != -1) {
+
+					if (t != 10 && newLinePassed == 0) {
+						temp = temp + Character.toString((char) t);
+					} else if (t == 10) {
 						newLinePassed = 1;
-					}else if (newLinePassed ==1){						
-						tempSampleArea = tempSampleArea + Character.toString((char)t);
+					} else if (newLinePassed == 1) {
+						tempSampleArea = tempSampleArea
+								+ Character.toString((char) t);
 					}
 				}
 				newLinePassed = 0;
@@ -82,53 +83,50 @@ public class DetailsActivity extends Activity {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
+		} else {
+			newSensorTitle = "Furnace Sensor";
+			newSampleArea = "123";
 		}
-		else{
-			 newSensorTitle = "Furnace Sensor";
-			 newSampleArea = "123";
-		}
-		
-		if (temp != null){
+
+		if (temp != null) {
 			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
 			sensorTitle.setText(temp);
-		}else if(newSensorTitle != ""){
+		} else if (newSensorTitle != "") {
 			TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
 			sensorTitle.setText(newSensorTitle);
-			
+
 		}
-		
-		
-		if (tempSampleArea != null){
+
+		if (tempSampleArea != null) {
 			TextView sampleArea = (TextView) findViewById(R.id.current_area);
 			sampleArea.setText(tempSampleArea);
-		}
-		else if(newSampleArea != null){	
+		} else if (newSampleArea != null) {
 			TextView sampleArea = (TextView) findViewById(R.id.current_area);
 			sampleArea.setText(newSampleArea);
 		}
-		
+
 	}
 
 	@Override
-	protected void onStart(){
+	protected void onStart() {
 		mStop = false;
-		if(threadReceive == null){
+		if (threadReceive == null) {
 			threadReceive = new Thread(networkRunnableReceive);
 			threadReceive.start();
-		}	
+		}
 		super.onStart();
 	}
-	
+
 	@Override
-	protected void onStop(){
+	protected void onStop() {
 		mStop = true;
-		if(threadReceive != null){
+		if (threadReceive != null) {
 			threadReceive.interrupt();
 		}
 		super.onStop();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -144,7 +142,8 @@ public class DetailsActivity extends Activity {
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
 			return true;
-		} else if (id == R.id.refresh_button) { //To write the data to the file whenever we refresh
+		} else if (id == R.id.refresh_button) { // To write the data to the file
+												// whenever we refresh
 			setContentView(R.layout.activity_details);
 			TextView myText = (TextView) findViewById(R.id.currentStatus);
 			CalcLevel(value);
@@ -156,10 +155,10 @@ public class DetailsActivity extends Activity {
 					EditActivity.class);
 			TextView newSensorTitle = (TextView) findViewById(R.id.sensor_title);
 			String newTitle = newSensorTitle.getText().toString();
-			
+
 			TextView newSampleArea = (TextView) findViewById(R.id.current_area);
 			String newArea = newSampleArea.getText().toString();
-			
+
 			editIntent.putExtra(EDITEDTITLE, newTitle);
 			editIntent.putExtra(EDITEDSAMPLEAREA, newArea);
 			DetailsActivity.this.startActivity(editIntent);
@@ -167,41 +166,42 @@ public class DetailsActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-
 	private static Thread threadReceive = null;
-	private final Runnable networkRunnableReceive = new Runnable(){
+	private final Runnable networkRunnableReceive = new Runnable() {
 		@Override
 		public void run() {
-			String url = "http://"+ARDUINO_IP_ADDRESS+"/arduino/analog/1"; //Read from analog 0
-	
-			while(mStop == false){
+			String url = "http://" + ARDUINO_IP_ADDRESS + "/arduino/analog/1"; // Read
+																				// from
+																				// analog
+																				// 0
+
+			while (mStop == false) {
 				try {
 					String tempString = readFROMURL(url);
 					try {
 						value = Double.parseDouble(tempString);
-					} 
-					catch (Exception e){
+					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					Thread.sleep(1000);
-				} 
-				catch (InterruptedException e) {
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 			threadReceive = null;
-			}
+		}
 	};
 
-	public String readFROMURL(String passURL){
+	public String readFROMURL(String passURL) {
 		URL tempURL;
 		StringBuilder builder = new StringBuilder();
 		try {
 			tempURL = new URL(passURL);
 			URLConnection urlConnect = tempURL.openConnection();
-			BufferedReader mcData = new BufferedReader(new InputStreamReader(urlConnect.getInputStream()));
+			BufferedReader mcData = new BufferedReader(new InputStreamReader(
+					urlConnect.getInputStream()));
 			String inputLine;
-			while ((inputLine = mcData.readLine()) != null){ 
+			while ((inputLine = mcData.readLine()) != null) {
 				builder.append(inputLine);
 			}
 			mcData.close();
@@ -212,20 +212,22 @@ public class DetailsActivity extends Activity {
 		}
 		return builder.toString();
 	}
-	
+
 	public void CalcLevel(double data) {
 		VoltageMap = (data * 3.3) / 1024.0;
 		DustDensity = (0.17 * VoltageMap) - 0.1;
 	}
-	
+
 	public void UpdateStatus(double myDust) {
-		//Testing for now will refine the data later
-		if(myDust >= 0.40) { ODSStatus = "Require Attention"; }
-		else if (myDust >= 0.3) { ODSStatus = "Fair"; }
-		else
-			ODSStatus = "Good";	
+		// Testing for now will refine the data later
+		if (myDust >= 0.40) {
+			ODSStatus = "Require Attention";
+		} else if (myDust >= 0.3) {
+			ODSStatus = "Fair";
+		} else
+			ODSStatus = "Good";
 	}
-	
+
 	public boolean isExternalStorageReadable() {
 		String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state)
@@ -234,5 +236,5 @@ public class DetailsActivity extends Activity {
 		}
 		return false;
 	}
-	
+
 }

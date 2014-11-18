@@ -1,17 +1,19 @@
 package com.example.cleanspace;
 
-import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
-import static com.example.cleanspace.DetailsActivity.SENSORNAME;
+import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
 import java.io.File;
 
+import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 /**
  * This activity will display the general details of our one sensor Details
@@ -23,33 +25,53 @@ import android.view.View;
  * 
  */
 public class MainActivity extends Activity {
-	
+
 	String sensorTitle = "";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		String cleanspacepath = Environment.getExternalStorageDirectory().toString();
-		cleanspacepath = cleanspacepath + "/Android/data/com.example.cleanspace/files";
+		populateButtons();
+	}
+
+	private void populateButtons() {
+
 		File f = new File(getExternalFilesDir(null), "");
 		File file[] = f.listFiles();
-		
-		for(int i = 0; i< file.length; i++){
-			sensorTitle = file[i].getName();
-			 
-		}
-	
-				
 
+		for (int i = 0; i < file.length; i++) {
+			Button sensorButton = new Button(this);
+
+			sensorButton.setId(i);
+			sensorTitle = file[i].getName();
+			sensorButton.setText(sensorTitle);
+
+			LinearLayout ll = (LinearLayout) findViewById(R.id.button_layout);
+			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
+					LayoutParams.WRAP_CONTENT);
+			ll.addView(sensorButton, lp);
+
+			sensorButton.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View view) {
+					Intent detailsIntent = new Intent(MainActivity.this,
+							DetailsActivity.class);
+					detailsIntent.putExtra(SENSORFILENAME, sensorTitle);
+					Log.d("here", sensorTitle);
+					MainActivity.this.startActivity(detailsIntent);
+				}
+
+			});
+		}
 	}
 
 	// Click details button to open new activity
 	public void openDetailsActivity(View view) {
 		Intent detailsIntent = new Intent(MainActivity.this,
-				DetailsActivity.class);			
-		detailsIntent.putExtra(SENSORNAME, sensorTitle);
+				DetailsActivity.class);
+		detailsIntent.putExtra(SENSORFILENAME, sensorTitle);
 		MainActivity.this.startActivity(detailsIntent);
 	}
 

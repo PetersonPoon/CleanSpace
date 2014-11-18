@@ -1,14 +1,17 @@
 package com.example.cleanspace;
 
+import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,9 +20,9 @@ import android.widget.Toast;
 
 public class AddActivity extends Activity {
 
+	public static final String SENSORADDED = null;
 	EditText newSensorName;
 	EditText newSampleArea;
-
 	String sensorName;
 	String sampleArea;
 	Context context = this;
@@ -28,7 +31,6 @@ public class AddActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_add);
-
 	}
 
 	@Override
@@ -47,10 +49,7 @@ public class AddActivity extends Activity {
 	 */
 	public void saveNewSensor(View view) throws IOException {
 
-		// If file is accessible
 		if (isExternalStorageWriteable()) {
-			FileOutputStream fos;
-
 			// Get data user inputed
 			newSensorName = (EditText) findViewById(R.id.sensor_title);
 			newSampleArea = (EditText) findViewById(R.id.sample_area);
@@ -58,43 +57,40 @@ public class AddActivity extends Activity {
 			sensorName = newSensorName.getText().toString();
 			sampleArea = newSampleArea.getText().toString();
 
-			Log.d("area", sampleArea);
-			Log.d("name", sensorName);
+			File newSensorFile = new File(getExternalFilesDir(null), sensorName
+					+ ".txt");
 
-			File myPath = new File(sensorName);
-
-			Log.d("path", myPath.toString());
-
-			// If file exists, make toast
-			// REPEATED FILES ARE ALLOWED??
-			if (myPath.exists() && myPath.isDirectory()) {
+			// If newSensorFile already exists, toast that it can't be saved
+			if (newSensorFile.exists()) {
 				Toast.makeText(getApplicationContext(),
 						"This sensor already exists, try again",
 						Toast.LENGTH_SHORT).show();
+			}
+
+			if (sensorName == null || sensorName.isEmpty()) {
+				Toast.makeText(getApplicationContext(),
+						"Please enter a valid name", Toast.LENGTH_SHORT).show();
+			} else if (sampleArea == null || sampleArea.isEmpty()) {
+				Toast.makeText(getApplicationContext(),
+						"Please enter a valid area", Toast.LENGTH_SHORT).show();
 			} else {
 				try {
-					if (sensorName == null || sensorName.isEmpty()) {
-						Toast.makeText(getApplicationContext(),
-								"Please enter a valid name", Toast.LENGTH_SHORT)
-								.show();
-						return;
-					}
-					if (sampleArea == null || sampleArea.isEmpty()) {
-						Toast.makeText(getApplicationContext(),
-								"Please enter a valid area", Toast.LENGTH_SHORT)
-								.show();
-						return;
-					} else {
+					OutputStream fos = new FileOutputStream(newSensorFile);
+					fos.write(sensorName.getBytes());
+					fos.write('\n');
+					fos.write(sampleArea.getBytes());
+					fos.close();
 
-						// Open file, write in sample area
-						fos = openFileOutput(sensorName, Context.MODE_PRIVATE);
-						fos.write(sampleArea.getBytes());
-						fos.close();
+					Toast.makeText(getApplicationContext(),
+							"New sensor has been saved", Toast.LENGTH_SHORT)
+							.show();
 
-						Toast.makeText(getApplicationContext(),
-								"New sensor has been saved", Toast.LENGTH_SHORT)
-								.show();
-					}
+					Intent sensorNameIntent = new Intent(AddActivity.this,
+							MainActivity.class);
+					sensorNameIntent.putExtra(SENSORFILENAME, sensorName
+							+ ".txt");
+					sensorNameIntent.putExtra(SENSORADDED, true);
+					AddActivity.this.startActivity(sensorNameIntent);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
