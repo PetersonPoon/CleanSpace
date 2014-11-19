@@ -11,6 +11,13 @@ import java.io.OutputStream;
 import android.os.Environment;
 
 public class FileHelper {
+	/**
+	 * For writing to a file
+	 * 
+	 * @param fileToWriteTo
+	 * @param sensorArea
+	 * @return
+	 */
 	public static boolean writeToFile(File fileToWriteTo, String sensorArea) {
 		if (isExternalStorageWriteable()) {
 			try {
@@ -38,6 +45,13 @@ public class FileHelper {
 		return true;
 	}
 
+	/**
+	 * For reading from file
+	 * 
+	 * @param readFromFile
+	 * @param fis
+	 * @return
+	 */
 	public static String readFromFile(File readFromFile, InputStream fis) {
 		int newLinePassed = 0;
 		String tempName = "";
@@ -68,6 +82,34 @@ public class FileHelper {
 
 		String readData = tempName + "," + tempSampleArea;
 		return readData;
+	}
+
+	/**
+	 * To append a file with new data from a sensor
+	 * 
+	 * @param fileToAppend
+	 * @param appendWith
+	 * @return
+	 */
+	public static boolean appendFile(File fileToAppend, String appendWith) {
+		if (isExternalStorageWriteable()) {
+			try {
+				OutputStream fos = new FileOutputStream(fileToAppend);
+
+				if (fileToAppend.exists()) {
+					fos.write(appendWith.getBytes());
+					fos.write('\n');
+				}
+				fos.close();
+
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+
+		}
+		return true;
 	}
 
 	public static boolean isExternalStorageWriteable() {

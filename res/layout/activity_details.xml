@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="255dp"
         android:text="@string/details"
         android:textColor="#FFFFFF"
         android:textSize="24sp" />
@@ -166,10 +166,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/sensor_title"
         android:layout_marginEnd="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="140dp"
         android:text="@string/status"
         android:textColor="#16b116"
         android:textSize="18sp" />

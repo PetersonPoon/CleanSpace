@@ -50,8 +50,8 @@ public class AddActivity extends Activity {
 		newSensorName = (EditText) findViewById(R.id.sensor_title);
 		newSampleArea = (EditText) findViewById(R.id.sample_area);
 
-		sensorName = newSensorName.getText().toString();
-		sampleArea = newSampleArea.getText().toString();
+		sensorName = newSensorName.getText().toString().trim();
+		sampleArea = newSampleArea.getText().toString().trim();
 
 		File newSensorFile = new File(getExternalFilesDir(null), sensorName
 				+ ".txt");
