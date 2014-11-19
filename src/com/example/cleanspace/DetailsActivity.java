@@ -32,34 +32,17 @@ public class DetailsActivity extends Activity {
 
 	public static final String SENSORFILENAME = "temp";
 
+	public String sensorFileName = "";
+	String newSensorTitle = "Furnace Filter";
+	static String testName = "qwerty";
+	public static final String SENSORNAME = "temp";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
 
-		String sensorFileName = "";
-		Intent intent = getIntent();
-		if (null != intent) {
-			sensorFileName = intent.getStringExtra(SENSORFILENAME);
-			File readFile = new File(getExternalFilesDir(null), sensorFileName);
-			InputStream fis = null;
-
-			String readData = FileHelper.readFromFile(readFile, fis);
-			String[] sensorData = readData.split(",");
-
-			if (sensorData != null) {
-				TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-				sensorTitle.setText(sensorData[0]);
-				TextView sampleArea = (TextView) findViewById(R.id.current_area);
-				sampleArea.setText(sensorData[1]);
-			}
-
-		} else {
-			Toast.makeText(getApplicationContext(),
-					"Sensor data not able to load, Please try again",
-					Toast.LENGTH_SHORT).show();
-
-		}
+		LoadSensorDetails();
 
 	}
 
@@ -104,6 +87,7 @@ public class DetailsActivity extends Activity {
 			CalcLevel(value);
 			UpdateStatus(DustDensity);
 			myText.setText(String.valueOf(ODSStatus));
+			LoadSensorDetails();
 			return true;
 		} else if (id == R.id.edit_button) {
 			Intent editIntent = new Intent(DetailsActivity.this,
@@ -182,4 +166,32 @@ public class DetailsActivity extends Activity {
 		} else
 			ODSStatus = "Good";
 	}
+
+	// Refresh can probably just call this?
+	private void LoadSensorDetails() {
+
+		Intent intent = getIntent();
+		if (null != intent) {
+			sensorFileName = intent.getStringExtra(SENSORFILENAME);
+			File readFile = new File(getExternalFilesDir(null), sensorFileName);
+			InputStream fis = null;
+
+			String readData = FileHelper.readFromFile(readFile, fis);
+			String[] sensorData = readData.split(",");
+
+			if (sensorData != null) {
+				TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
+				sensorTitle.setText(sensorData[0]);
+				TextView sampleArea = (TextView) findViewById(R.id.current_area);
+				sampleArea.setText(sensorData[1]);
+			}
+
+		} else {
+			Toast.makeText(getApplicationContext(),
+					"Sensor data not able to load, Please try again",
+					Toast.LENGTH_SHORT).show();
+		}
+
+	}
+
 }
