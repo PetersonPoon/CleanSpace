@@ -1,56 +1,77 @@
 package com.example.cleanspace;
 
-import static com.example.cleanspace.EditActivity.EDITEDSAMPLEAREA;
-import static com.example.cleanspace.DetailsActivity.SENSORNAME;
+import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
 import java.io.File;
 
+import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.LinearLayout;
 
 /**
  * This activity will display the general details of our one sensor Details
  * include: Name, dust condition (good/bad)
  * 
- * FUTURE: Display details on more than one sensor
  * 
  * @author echiang
  * 
  */
 public class MainActivity extends Activity {
-	
-	String sensorTitle = "";
+	View.OnClickListener listeners[];
+	String sensorFileTitle;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		String cleanspacepath = Environment.getExternalStorageDirectory().toString();
-		cleanspacepath = cleanspacepath + "/Android/data/com.example.cleanspace/files";
-		File f = new File(getExternalFilesDir(null), "");
-		File file[] = f.listFiles();
-		
-		for(int i = 0; i< file.length; i++){
-			sensorTitle = file[i].getName();
-			 
-		}
-	
-				
-
+		populateButtons();
 	}
 
-	// Click details button to open new activity
-	public void openDetailsActivity(View view) {
-		Intent detailsIntent = new Intent(MainActivity.this,
-				DetailsActivity.class);			
-		detailsIntent.putExtra(SENSORNAME, sensorTitle);
-		MainActivity.this.startActivity(detailsIntent);
+	private class newClick implements OnClickListener {
+		private String btnString;
+
+		public newClick(String currentButton) {
+			btnString = currentButton + ".txt";
+		}
+
+		public void onClick(View view) {
+			Intent detailsIntent = new Intent(MainActivity.this,
+					DetailsActivity.class);
+			// view.
+			detailsIntent.putExtra(SENSORFILENAME, btnString);
+			MainActivity.this.startActivity(detailsIntent);
+		}
+	};
+
+	private void populateButtons() {
+
+		File f = new File(getExternalFilesDir(null), "");
+		File file[] = f.listFiles();
+
+		for (int i = 0; i < file.length; i++) {
+			Button sensorButton = new Button(this);
+
+			sensorFileTitle = file[i].getName();
+
+			String sensorTitle = sensorFileTitle.substring(0,
+					sensorFileTitle.lastIndexOf('.'));
+
+			sensorButton.setText(sensorTitle);
+
+			LinearLayout ll = (LinearLayout) findViewById(R.id.button_layout);
+			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
+					LayoutParams.WRAP_CONTENT);
+
+			sensorButton.setOnClickListener(new newClick(sensorTitle));
+			ll.addView(sensorButton, lp);
+		}
 	}
 
 	@Override

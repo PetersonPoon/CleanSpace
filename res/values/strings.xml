@@ -14,12 +14,18 @@
     <string name="current_status">Good/Bad</string>
     <string name="particle_count">Particle Count: </string>
     <string name="sample_area">Sample Area: </string>
+    <string name="co_title">Carbon Monoxide: </string>
+    <string name="temperature_title">Temperature: </string>
+    <string name="humidity_title">Humidity: </string>
     <string name="edit_fields">Click to edit fields: </string>
     <string name="sensor_name">Name of Sensor </string>
     <string name="area_size">Size of area to monitor </string>
     <string name="changed">Changed </string>
     <string name="ignored">Ignored</string>
     <string name="area_value">Area</string>
+    <string name="humidity_value">humidity</string>
+    <string name="temperature_value">Temperature</string>
+    <string name="co_value">CO</string>
     <string name="particle_value">Particles</string>
     <string name="add_button">Add</string>
     <string name="edit_button">Edit</string>
@@ -27,5 +33,7 @@
     <string name="title_activity_add">AddActivity</string>
     <string name="add_sensor_name">Enter Sensor Name</string>
     <string name="save">Save</string>
+    <string name="title_activity_save_helper">SaveHelper</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
