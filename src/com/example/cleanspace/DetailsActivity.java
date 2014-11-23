@@ -23,9 +23,14 @@ import android.widget.Toast;
 public class DetailsActivity extends Activity {
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
 	private Boolean mStop = false;
+	private String dustUrl = "http://" + ARDUINO_IP_ADDRESS
+			+ "/arduino/analog/1"; // Read dust
+	private String COUrl = "http://" + ARDUINO_IP_ADDRESS + "/arduino/analog/2"; // Read
+																					// CO
 
-	public double value;
-	public double VoltageMap;
+	public double dustValue;
+	public double coValue;
+	public double dustVoltageMap;
 	public double DustDensity;
 
 	public String ODSStatus;
@@ -82,11 +87,12 @@ public class DetailsActivity extends Activity {
 			return true;
 		} else if (id == R.id.refresh_button) { // To write the data to the file
 												// whenever we refresh
-			setContentView(R.layout.activity_details);
+			// Get Dust data
 			TextView myText = (TextView) findViewById(R.id.currentStatus);
-			CalcLevel(value);
+			CalcLevel(dustValue);
 			UpdateStatus(DustDensity);
 			myText.setText(String.valueOf(ODSStatus));
+
 			LoadSensorDetails();
 			return true;
 		} else if (id == R.id.edit_button) {
@@ -109,16 +115,14 @@ public class DetailsActivity extends Activity {
 	private final Runnable networkRunnableReceive = new Runnable() {
 		@Override
 		public void run() {
-			String url = "http://" + ARDUINO_IP_ADDRESS + "/arduino/analog/1"; // Read
-																				// from
-																				// analog
-																				// 0
 
 			while (mStop == false) {
 				try {
-					String tempString = readFROMURL(url);
+					String dustString = readFROMURL(dustUrl);
+					String coString = readFROMURL(COUrl);
 					try {
-						value = Double.parseDouble(tempString);
+						dustValue = Double.parseDouble(dustString);
+						coValue = Double.parseDouble(coString);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -152,9 +156,14 @@ public class DetailsActivity extends Activity {
 		return builder.toString();
 	}
 
+	/**
+	 * Dust Value in mg/ m^3
+	 * 
+	 * @param data
+	 */
 	public void CalcLevel(double data) {
-		VoltageMap = (data * 3.3) / 1024.0;
-		DustDensity = (0.17 * VoltageMap) - 0.1;
+		dustVoltageMap = ((1023 - data) * 3.3) / 1024.0;
+		DustDensity = (0.17 * dustVoltageMap) - 0.1;
 	}
 
 	public void UpdateStatus(double myDust) {
@@ -184,6 +193,7 @@ public class DetailsActivity extends Activity {
 				sensorTitle.setText(sensorData[0]);
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
 				sampleArea.setText(sensorData[1]);
+
 			}
 
 		} else {
@@ -192,6 +202,17 @@ public class DetailsActivity extends Activity {
 					Toast.LENGTH_SHORT).show();
 		}
 
-	}
+		// Load dust count
+		TextView currentCount = (TextView) findViewById(R.id.particle_value);
+		double dustCount = (double) Math.round(DustDensity * 100000) / 100000;
+		String count = String.valueOf(dustCount);
+		currentCount.setText(count);
 
+		// Load CO count
+		TextView coCount = (TextView) findViewById(R.id.co_value);
+		// double coValue = (double) Math.round(CoDensity * 10000) / 10000;
+		String co = String.valueOf(coValue);
+		coCount.setText(co);
+
+	}
 }

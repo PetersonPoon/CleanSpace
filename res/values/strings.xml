@@ -12,9 +12,9 @@
     <string name="details">Details</string>
     <string name="status">Status</string>
     <string name="current_status">Good/Bad</string>
-    <string name="particle_count">Particle Count: </string>
+    <string name="particle_count">Particle Count (mg/m^3): </string>
     <string name="sample_area">Sample Area: </string>
-    <string name="co_title">Carbon Monoxide: </string>
+    <string name="co_title">Carbon Monoxide (ppm): </string>
     <string name="temperature_title">Temperature: </string>
     <string name="humidity_title">Humidity: </string>
     <string name="edit_fields">Click to edit fields: </string>
