@@ -55,6 +55,7 @@ public class EditActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			onBackPressed();
 
 			return true;
 		}
@@ -85,7 +86,7 @@ public class EditActivity extends Activity {
 				openSaveFile.renameTo(renameSaveFile);
 			}
 
-			boolean successfulWrite = FileHelper.writeToFile(renameSaveFile,
+			boolean successfulWrite = FileHelper.writeToNewFile(renameSaveFile,
 					newSampleArea);
 			if (successfulWrite) {
 				Toast.makeText(getApplicationContext(),

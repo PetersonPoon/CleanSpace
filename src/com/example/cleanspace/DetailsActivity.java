@@ -6,7 +6,6 @@ import static com.example.cleanspace.EditActivity.EDITEDTITLE;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -14,6 +13,7 @@ import java.net.URLConnection;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,13 +27,20 @@ public class DetailsActivity extends Activity {
 			+ "/arduino/analog/1"; // Read dust
 	private String COUrl = "http://" + ARDUINO_IP_ADDRESS + "/arduino/analog/2"; // Read
 																					// CO
+	// TODO Change this for Humidity
+	private String humidityUrl = "http://" + ARDUINO_IP_ADDRESS
+			+ "/arduino/analog/3"; // Read
+	// humidity
 
+	public double sensorTime = 1;
 	public double dustValue;
 	public double coValue;
+	public double humidityValue;
+	public double temperatureValue;
 	public double dustVoltageMap;
 	public double DustDensity;
 
-	public String ODSStatus;
+	public String sensorStatus;
 
 	public static final String SENSORFILENAME = "temp";
 
@@ -42,13 +49,16 @@ public class DetailsActivity extends Activity {
 	static String testName = "qwerty";
 	public static final String SENSORNAME = "temp";
 
+	private static final String badStatus = "Requires Attention";
+	private static final String fairStatus = "Fair";
+	private static final String goodStatus = "Good";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
 
-		LoadSensorDetails();
-
+		fillSensorFields();
 	}
 
 	@Override
@@ -87,13 +97,8 @@ public class DetailsActivity extends Activity {
 			return true;
 		} else if (id == R.id.refresh_button) { // To write the data to the file
 												// whenever we refresh
-			// Get Dust data
-			TextView myText = (TextView) findViewById(R.id.currentStatus);
-			CalcLevel(dustValue);
-			UpdateStatus(DustDensity);
-			myText.setText(String.valueOf(ODSStatus));
+			fillSensorFields();
 
-			LoadSensorDetails();
 			return true;
 		} else if (id == R.id.edit_button) {
 			Intent editIntent = new Intent(DetailsActivity.this,
@@ -109,6 +114,32 @@ public class DetailsActivity extends Activity {
 			DetailsActivity.this.startActivity(editIntent);
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	/**
+	 * Call this method to fill in sensor fields
+	 * 
+	 * Currently fills in: Dust Value CO Value Status (With colour coding)
+	 */
+	private void fillSensorFields() {
+		// Get Dust data
+		TextView myText = (TextView) findViewById(R.id.currentStatus);
+		CalcLevel(dustValue);
+
+		/**
+		 * Change status text colour depending on status
+		 */
+		sensorStatus = UpdateStatus(DustDensity, coValue);
+		myText.setText(String.valueOf(sensorStatus));
+		if (sensorStatus == badStatus) {
+			myText.setTextColor(Color.RED);
+		} else if (sensorStatus == fairStatus) {
+			myText.setTextColor(Color.BLUE);
+		} else {
+			myText.setTextColor(Color.GREEN);
+		}
+
+		LoadSensorDetails();
 	}
 
 	private static Thread threadReceive = null;
@@ -161,31 +192,32 @@ public class DetailsActivity extends Activity {
 	 * 
 	 * @param data
 	 */
-	public void CalcLevel(double data) {
+	private void CalcLevel(double data) {
 		dustVoltageMap = ((1023 - data) * 3.3) / 1024.0;
 		DustDensity = (0.17 * dustVoltageMap) - 0.1;
 	}
 
-	public void UpdateStatus(double myDust) {
+	public String UpdateStatus(double myDust, double myCo) {
 		// Testing for now will refine the data later
-		if (myDust >= 0.40) {
-			ODSStatus = "Require Attention";
-		} else if (myDust >= 0.3) {
-			ODSStatus = "Fair";
-		} else
-			ODSStatus = "Good";
+		// TODO CO value means nothing, just put in a value to test
+		if ((myDust >= 0.40) || (myCo >= 50)) {
+			sensorStatus = badStatus;
+		} else if ((myDust >= 0.3) || (myCo >= 20)) {
+			sensorStatus = fairStatus;
+		} else {
+			sensorStatus = goodStatus;
+		}
+		return sensorStatus;
 	}
 
-	// Refresh can probably just call this?
 	private void LoadSensorDetails() {
 
 		Intent intent = getIntent();
 		if (null != intent) {
 			sensorFileName = intent.getStringExtra(SENSORFILENAME);
 			File readFile = new File(getExternalFilesDir(null), sensorFileName);
-			InputStream fis = null;
 
-			String readData = FileHelper.readFromFile(readFile, fis);
+			String readData = FileHelper.readFromFile(readFile);
 			String[] sensorData = readData.split(",");
 
 			if (sensorData != null) {
@@ -194,6 +226,9 @@ public class DetailsActivity extends Activity {
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
 				sampleArea.setText(sensorData[1]);
 
+				// Write refreshed data into file for storage/graphing
+				FileHelper.appendFile(readFile, DustDensity, coValue,
+						sensorTime);
 			}
 
 		} else {
@@ -202,15 +237,14 @@ public class DetailsActivity extends Activity {
 					Toast.LENGTH_SHORT).show();
 		}
 
-		// Load dust count
+		// Load dust count to app
 		TextView currentCount = (TextView) findViewById(R.id.particle_value);
 		double dustCount = (double) Math.round(DustDensity * 100000) / 100000;
 		String count = String.valueOf(dustCount);
 		currentCount.setText(count);
 
-		// Load CO count
+		// Load CO count to app
 		TextView coCount = (TextView) findViewById(R.id.co_value);
-		// double coValue = (double) Math.round(CoDensity * 10000) / 10000;
 		String co = String.valueOf(coValue);
 		coCount.setText(co);
 

@@ -91,9 +91,6 @@ public class MainActivity extends Activity {
 			Intent addIntent = new Intent(MainActivity.this, AddActivity.class);
 			MainActivity.this.startActivity(addIntent);
 			return true;
-		} else if (id == R.id.refresh_button) {
-			// TODO: Code here to get new data
-			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
