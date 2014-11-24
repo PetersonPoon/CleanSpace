@@ -13,8 +13,11 @@ int ledPin = 12;
 
 //float HumidData;
 float DustData;
+float CoData;
 float VoltageMap;
 float DustLevel;
+
+int coAnalogPin = A2;
 
 YunServer server(5555);
 
@@ -53,7 +56,7 @@ void loop() {
    VoltageMap = (DustData * 3.3) / 1024.0;
    DustLevel = 0.17 * VoltageMap - 0.1;
    
-   Serial.print("Raw Signal Value (0-1023): ");
+   Serial.print("Raw Signal Value (0-1023): ");;
    Serial.print(DustData);
  
    Serial.print(" - Voltage: ");
@@ -62,6 +65,8 @@ void loop() {
    Serial.print(" - Dust Density: ");
    Serial.println(DustLevel);
 /////////////////////////////////////////////////////////////////
+    
+    CoData = analogRead(coAnalogPin);
     
     if (client) {
       process(client);
@@ -104,5 +109,10 @@ void analogTime(YunClient client) {
    Serial.print(pin);
 //value = analogRead(pin);
 //Add if statement if multiple sensors use analog pins
+if(pin==1){
    client.print(DustData);
+}
+   if(pin == 2){
+   client.print(CoData);
+   }
 }

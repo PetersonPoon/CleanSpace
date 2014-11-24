@@ -71,7 +71,7 @@ public class AddActivity extends Activity {
 					"Please enter a valid area", Toast.LENGTH_SHORT).show();
 		} else {
 
-			boolean successfulWrite = FileHelper.writeToFile(newSensorFile,
+			boolean successfulWrite = FileHelper.writeToNewFile(newSensorFile,
 					sampleArea);
 			if (successfulWrite) {
 				Toast.makeText(getApplicationContext(),

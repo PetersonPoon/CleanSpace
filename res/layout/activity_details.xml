@@ -17,7 +17,7 @@
         android:textSize="24sp" />
 
     <TextView
-        android:id="@+id/particle_count"
+        android:id="@+id/particle_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/details_title"
@@ -29,7 +29,7 @@
         android:textSize="18sp" />
 
     <TextView
-        android:id="@+id/current_count"
+        android:id="@+id/particle_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -46,7 +46,7 @@
         android:id="@+id/humidity_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/particle_count"
+        android:layout_below="@+id/particle_value"
         android:layout_marginLeft="15dp"
         android:layout_marginStart="15dp"
         android:layout_marginTop="10dp"
@@ -60,7 +60,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/particle_count"
+        android:layout_below="@+id/particle_value"
         android:layout_marginEnd="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginTop="10dp"
@@ -206,8 +206,8 @@
         android:layout_height="60dp"
         android:layout_below="@+id/current_area"
         android:layout_marginTop="30dp"
-        android:layout_toLeftOf="@+id/current_count"
-        android:layout_toStartOf="@+id/current_count"
+        android:layout_toLeftOf="@+id/particle_value"
+        android:layout_toStartOf="@+id/particle_value"
         android:background="@drawable/circle"
         android:text="@string/ignored"
         android:textColor="#16b116"
