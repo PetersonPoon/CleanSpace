@@ -87,7 +87,7 @@ public class EditActivity extends Activity {
 			}
 
 			boolean successfulWrite = FileHelper.writeToNewFile(renameSaveFile,
-					newSampleArea);
+					newSampleArea, false);
 			if (successfulWrite) {
 				Toast.makeText(getApplicationContext(),
 						"Sensor has been successfully edited",

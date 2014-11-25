@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.os.Environment;
+import android.util.Log;
 
 public class FileHelper {
 	/**
@@ -15,21 +18,37 @@ public class FileHelper {
 	 * 
 	 * @param fileToWriteTo
 	 * @param sensorArea
+	 * @param newFile
+	 *            boolean : if it is just an edit to name or area, prefix with
+	 *            Edit area
 	 * @return
 	 */
-	public static boolean writeToNewFile(File fileToWriteTo, String sensorArea) {
+	public static boolean writeToNewFile(File fileToWriteTo, String sensorArea,
+			Boolean newFile) {
 		if (isExternalStorageWriteable()) {
 			try {
-				OutputStream fos = new FileOutputStream(fileToWriteTo);
+				OutputStream fos = new FileOutputStream(fileToWriteTo, true);
 				String sensorFileName = fileToWriteTo.getName();
 				String sensorName = sensorFileName.substring(0,
 						sensorFileName.lastIndexOf('.'));
 
 				if (sensorName != null && sensorArea != null) {
-					fos.write(sensorName.getBytes());
-					fos.write("/".getBytes());
-					fos.write(sensorArea.getBytes());
-					fos.write("/".getBytes());
+					if (newFile == true) {
+						fos.write("Sensor Name: ".getBytes());
+						fos.write(sensorName.getBytes());
+						fos.write("/".getBytes());
+						fos.write("Sample Area: ".getBytes());
+						fos.write(sensorArea.getBytes());
+						fos.write("/".getBytes());
+					} else {
+						fos.write("Edited Sensor Name: ".getBytes());
+						fos.write(sensorName.getBytes());
+						fos.write("/".getBytes());
+						fos.write("Edited Sample Area: ".getBytes());
+						fos.write(sensorArea.getBytes());
+						fos.write("/".getBytes());
+					}
+
 					fos.close();
 				}
 
@@ -86,19 +105,44 @@ public class FileHelper {
 	 * @return Name and area
 	 */
 	public static String readFromFile(File readFromFile) {
-		// int newLinePassed = 0;
-		String tempName = "";
-		String tempSampleArea = "";
+		String tempName = null;
+		String tempSampleArea = null;
+		String sensorNameString = "Sensor Name: ";
+		String sensorAreaString = "Sample Area: ";
 
-		String readLine = null;
+		String readLine;
+		String[] line;
+
 		if (isExternalStorageReadable()) {
 			try {
 				FileReader freader = new FileReader(readFromFile);
 				BufferedReader inputFile = new BufferedReader(freader);
+
+				List<String> arrayLine = new ArrayList<String>();
+
 				while ((readLine = inputFile.readLine()) != null) {
-					String[] arrayLine = readLine.split("/");
-					tempName = arrayLine[0];
-					tempSampleArea = arrayLine[1];
+					line = readLine.split("/");
+					for (int k = 0; k < line.length; k++) {
+						arrayLine.add(line[k]);
+					}
+				}
+
+				for (int i = arrayLine.size() - 1; i >= 0; i--) {
+					if (arrayLine.get(i).contains(sensorNameString)) {
+						tempName = arrayLine.get(i);
+						String[] nameSplit = tempName.split(":");
+						tempName = nameSplit[1].trim();
+
+					} else if (arrayLine.get(i).contains(sensorAreaString)) {
+						tempSampleArea = arrayLine.get(i);
+						String[] areaSplit = tempSampleArea.split(":");
+						tempSampleArea = areaSplit[1].trim();
+						Log.d("sampleArea", tempSampleArea);
+					}
+
+					if (tempName != null && tempSampleArea != null) {
+						i = 0;
+					}
 				}
 
 				inputFile.close();
