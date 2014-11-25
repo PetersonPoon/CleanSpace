@@ -61,9 +61,7 @@ public class AddActivity extends Activity {
 			Toast.makeText(getApplicationContext(),
 					"This sensor already exists, try again", Toast.LENGTH_SHORT)
 					.show();
-		}
-
-		if (sensorName == null || sensorName.isEmpty()) {
+		} else if (sensorName == null || sensorName.isEmpty()) {
 			Toast.makeText(getApplicationContext(),
 					"Please enter a valid name", Toast.LENGTH_SHORT).show();
 		} else if (sampleArea == null || sampleArea.isEmpty()) {
@@ -72,7 +70,7 @@ public class AddActivity extends Activity {
 		} else {
 
 			boolean successfulWrite = FileHelper.writeToNewFile(newSensorFile,
-					sampleArea);
+					sampleArea, true);
 			if (successfulWrite) {
 				Toast.makeText(getApplicationContext(),
 						"New sensor has been saved", Toast.LENGTH_SHORT).show();
