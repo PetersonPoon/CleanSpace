@@ -42,14 +42,24 @@ public class MainActivity extends Activity {
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
 	TextView textIntValue, textStrValue, textStatus;
 
+	// Maybe this can be used just to confirm the service wrote to file? this might be useless
 	class IncomingHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case LocalService.MSG_SET_DUST_VALUE:
-				textIntValue.setText("Int Message: " + msg.arg1);
-				break;
-			case LocalService.MSG_SET_CO_VALUE:
+			case LocalService.MSG_GET_SENSOR_NAME:
+				Message sensorName = Message.obtain(null,
+						LocalService.MSG_REGISTER_CLIENT);
+				sensorName.obj =  sensorFileTitle;
+				try {
+					mService.send(sensorName);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			case LocalService.MSG_SET_SENSOR_VALUES:
+				
+				// NO response needed from main activity?
 				String str1 = msg.getData().getString("str1");
 				textStrValue.setText("Str Message: " + str1);
 				break;

@@ -14,7 +14,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -22,8 +21,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class LocalService extends Service {
 	private Boolean mStop = false;
@@ -44,6 +41,7 @@ public class LocalService extends Service {
 	public double temperatureValue;
 	public double dustVoltageMap;
 	public double DustDensity;
+	public String sensorName;
 
 	public String sensorStatus;
 	private static final String badStatus = "Requires Attention";
@@ -63,10 +61,8 @@ public class LocalService extends Service {
 	int mValue = 0; // Holds last value set by a client.
 	static final int MSG_REGISTER_CLIENT = 1;
 	static final int MSG_UNREGISTER_CLIENT = 2;
-	static final int MSG_SET_DUST_VALUE = 3;
-	static final int MSG_SET_CO_VALUE = 4;
-	static final int MSG_SET_HUM_VALUE = 5;
-	static final int MSG_SET_TEMP_VALUE = 6;
+	static final int MSG_GET_SENSOR_NAME = 3;
+	static final int MSG_SET_SENSOR_VALUES = 4;
 	final Messenger mMessenger = new Messenger(new IncomingHandler()); // Target
 																		// we
 																		// publish
@@ -94,44 +90,18 @@ public class LocalService extends Service {
 			case MSG_UNREGISTER_CLIENT:
 				mClients.remove(msg.replyTo);
 				break;
-			case MSG_SET_DUST_VALUE:
-				// dustValue = ;
+			case MSG_GET_SENSOR_NAME:
+				sensorName = msg.toString();
+			case MSG_SET_SENSOR_VALUES:
+				// get all sensor values, write to file?
+				File readFile = new File(getExternalFilesDir(null), sensorName);
+
+				FileHelper.appendFile(readFile, DustDensity, coValue,
+						sensorTime, sensorStatus);
 				break;
-			case MSG_SET_CO_VALUE:
-				// coValue = ;
-				break;
-			case MSG_SET_HUM_VALUE:
-				// humidityValue ;
-				break;
-			case MSG_SET_TEMP_VALUE:
-				// temperatureValue = ;
-				break;
+
 			default:
 				super.handleMessage(msg);
-			}
-		}
-	}
-
-	private void sendMessageToUI(int intvaluetosend) {
-		for (int i = mClients.size() - 1; i >= 0; i--) {
-			try {
-				// Send data as an Integer
-				mClients.get(i)
-						.send(Message.obtain(null, MSG_SET_DUST_VALUE,
-								thisIsWrong, 0));
-
-				// Send data as a String
-				Bundle b = new Bundle();
-				b.putString("str1", "ab" + intvaluetosend + "cd");
-				Message msg = Message.obtain(null, MSG_SET_DUST_VALUE);
-				msg.setData(b);
-				mClients.get(i).send(msg);
-
-			} catch (RemoteException e) {
-				// The client is dead. Remove it from the list; we are going
-				// through the list from back to front so this is safe to do
-				// inside the loop.
-				mClients.remove(i);
 			}
 		}
 	}
@@ -159,6 +129,12 @@ public class LocalService extends Service {
 			threadReceive = new Thread(networkRunnableReceive);
 			threadReceive.start();
 		}
+
+		// TODO: iS THIS IN THE RIGHT PLACE?
+		CalcLevel(dustValue);
+
+		UpdateStatus(dustValue, coValue);
+
 		return Service.START_STICKY;
 	}
 
@@ -175,17 +151,15 @@ public class LocalService extends Service {
 	}
 
 	/**
-	 * Show a notification while this service is running.
+	 * Show a notification while this service is running for now, but will be
+	 * used to notify user when status is bad in future
 	 */
 	private void showNotification() {
-		// In this sample, we'll use the same text for the ticker and the
-		// expanded notification
-
 		// The PendingIntent to launch our activity if the user selects this
 		// notification
 		Intent intent = new Intent(this, MainActivity.class);
 		PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
-		// Set the icon, scrolling text and timestamp
+
 		Notification notification = new Notification.Builder(this)
 				.setContentTitle("Home Air Monitor")
 				.setContentText(
