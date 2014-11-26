@@ -48,7 +48,6 @@ public class FileHelper {
 						fos.write(sensorArea.getBytes());
 						fos.write("/".getBytes());
 					}
-
 					fos.close();
 				}
 
@@ -70,7 +69,7 @@ public class FileHelper {
 	 * @return
 	 */
 	public static void appendFile(File fileToWriteTo, double dustData,
-			double coData, double timeCollected) {
+			double coData, double timeCollected, String sensorStatus) {
 		if (isExternalStorageWriteable()) {
 			try {
 				OutputStream fos = new FileOutputStream(fileToWriteTo, true);
@@ -88,6 +87,9 @@ public class FileHelper {
 					fos.write("CO Data: ".getBytes());
 					fos.write(coString.getBytes());
 					fos.write("/".getBytes());
+					fos.write("Status: ".getBytes());
+					fos.write(sensorStatus.getBytes());
+					fos.write("/".getBytes());
 					fos.close();
 				}
 
@@ -102,9 +104,9 @@ public class FileHelper {
 	 * For reading from file
 	 * 
 	 * @param readFromFile
-	 * @return Name and area
+	 * @return name and area
 	 */
-	public static String readFromFile(File readFromFile) {
+	public static String readNameAndAreaFromFile(File readFromFile) {
 		String tempName = null;
 		String tempSampleArea = null;
 		String sensorNameString = "Sensor Name: ";
@@ -137,7 +139,6 @@ public class FileHelper {
 						tempSampleArea = arrayLine.get(i);
 						String[] areaSplit = tempSampleArea.split(":");
 						tempSampleArea = areaSplit[1].trim();
-						Log.d("sampleArea", tempSampleArea);
 					}
 
 					if (tempName != null && tempSampleArea != null) {
@@ -154,6 +155,49 @@ public class FileHelper {
 
 		String readData = tempName + "," + tempSampleArea;
 		return readData;
+	}
+
+	public static String readStatusFromFile(File readFromFile) {
+		String currStatus = null;
+		String statusString = "Status: ";
+
+		String readLine;
+		String[] line;
+
+		if (isExternalStorageReadable()) {
+			try {
+				FileReader freader = new FileReader(readFromFile);
+				BufferedReader inputFile = new BufferedReader(freader);
+
+				List<String> arrayLine = new ArrayList<String>();
+
+				while ((readLine = inputFile.readLine()) != null) {
+					line = readLine.split("/");
+					for (int k = 0; k < line.length; k++) {
+						arrayLine.add(line[k]);
+					}
+				}
+
+				for (int i = arrayLine.size() - 1; i >= 0; i--) {
+					if (arrayLine.get(i).contains(statusString)) {
+						currStatus = arrayLine.get(i);
+						String[] statusSplit = currStatus.split(":");
+						currStatus = statusSplit[1].trim();
+					}
+
+					if (currStatus != null) {
+						i = 0;
+					}
+				}
+
+				inputFile.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return currStatus;
+
 	}
 
 	public static boolean isExternalStorageWriteable() {
