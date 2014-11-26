@@ -34,6 +34,6 @@
     <string name="add_sensor_name">Enter Sensor Name</string>
     <string name="save">Save</string>
     <string name="title_activity_save_helper">SaveHelper</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="local_service_started">Service start</string>
 
 </resources>

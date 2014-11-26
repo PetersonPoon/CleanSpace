@@ -45,9 +45,6 @@ public class DetailsActivity extends Activity {
 	public static final String SENSORFILENAME = "temp";
 
 	public String sensorFileName = "";
-	String newSensorTitle = "Furnace Filter";
-	static String testName = "qwerty";
-	public static final String SENSORNAME = "temp";
 
 	private static final String badStatus = "Requires Attention";
 	private static final String fairStatus = "Fair";
@@ -72,13 +69,13 @@ public class DetailsActivity extends Activity {
 	}
 
 	@Override
-	protected void onStop() {
-		mStop = true;
-		if (threadReceive != null) {
-			threadReceive.interrupt();
+		protected void onStop() {
+			mStop = true;
+			if (threadReceive != null) {
+				threadReceive.interrupt();
+			}
+			super.onStop();
 		}
-		super.onStop();
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -202,6 +199,7 @@ public class DetailsActivity extends Activity {
 		// TODO CO value means nothing, just put in a value to test
 		if ((myDust >= 0.40) || (myCo >= 50)) {
 			sensorStatus = badStatus;
+//			setNotification(true);
 		} else if ((myDust >= 0.3) || (myCo >= 20)) {
 			sensorStatus = fairStatus;
 		} else {
@@ -217,7 +215,7 @@ public class DetailsActivity extends Activity {
 			sensorFileName = intent.getStringExtra(SENSORFILENAME);
 			File readFile = new File(getExternalFilesDir(null), sensorFileName);
 
-			String readData = FileHelper.readFromFile(readFile);
+			String readData = FileHelper.readNameAndAreaFromFile(readFile);
 			String[] sensorData = readData.split(",");
 
 			if (sensorData != null) {
@@ -228,7 +226,7 @@ public class DetailsActivity extends Activity {
 
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
-						sensorTime);
+						sensorTime, sensorStatus);
 			}
 
 		} else {

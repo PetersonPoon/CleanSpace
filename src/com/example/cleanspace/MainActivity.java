@@ -6,8 +6,11 @@ import java.io.File;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +35,13 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		populateButtons();
+		Context context = this;
+
+		// Start background service
+		// use this to start and trigger a service
+		Intent startServiceIntent = new Intent(context, LocalService.class);
+		// potentially add data to the intent
+		context.startService(startServiceIntent);
 	}
 
 	private class newClick implements OnClickListener {
@@ -54,6 +64,10 @@ public class MainActivity extends Activity {
 
 		File f = new File(getExternalFilesDir(null), "");
 		File file[] = f.listFiles();
+		LinearLayout ll;
+		String goodStatus = "Good";
+		String fairStatus = "Fair";
+		String badStatus = "Requires Attention";
 
 		for (int i = 0; i < file.length; i++) {
 			Button sensorButton = new Button(this);
@@ -65,12 +79,28 @@ public class MainActivity extends Activity {
 
 			sensorButton.setText(sensorTitle);
 
-			LinearLayout ll = (LinearLayout) findViewById(R.id.button_layout);
+			ll = (LinearLayout) findViewById(R.id.button_layout);
 			LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT,
 					LayoutParams.WRAP_CONTENT);
 
 			sensorButton.setOnClickListener(new newClick(sensorTitle));
+
+			String status = FileHelper.readStatusFromFile(file[i]);
+
+			if (status != null) {
+				Log.d("status main", status);
+				if (status.equalsIgnoreCase(goodStatus)) {
+					sensorButton.setTextColor(Color.parseColor("#30983a"));
+				} else if (status.equalsIgnoreCase(fairStatus)) {
+					sensorButton.setTextColor(Color.parseColor("#ffcc00"));
+				} else if (status.equalsIgnoreCase(badStatus)) {
+					sensorButton.setTextColor(Color.RED);
+				}
+			}
+
+			sensorButton.setOnClickListener(new newClick(sensorTitle));
 			ll.addView(sensorButton, lp);
+
 		}
 	}
 
