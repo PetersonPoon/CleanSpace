@@ -6,10 +6,17 @@ import java.io.File;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,6 +24,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * This activity will display the general details of our one sensor Details
@@ -29,6 +37,89 @@ import android.widget.LinearLayout;
 public class MainActivity extends Activity {
 	View.OnClickListener listeners[];
 	String sensorFileTitle;
+	Messenger mService = null;
+	boolean mIsBound;
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	TextView textIntValue, textStrValue, textStatus;
+
+	class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case LocalService.MSG_SET_DUST_VALUE:
+				textIntValue.setText("Int Message: " + msg.arg1);
+				break;
+			case LocalService.MSG_SET_CO_VALUE:
+				String str1 = msg.getData().getString("str1");
+				textStrValue.setText("Str Message: " + str1);
+				break;
+			default:
+				super.handleMessage(msg);
+			}
+		}
+	}
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			mService = new Messenger(service);
+			textStatus.setText("Attached.");
+			try {
+				Message msg = Message.obtain(null,
+						LocalService.MSG_REGISTER_CLIENT);
+				msg.replyTo = mMessenger;
+				mService.send(msg);
+			} catch (RemoteException e) {
+				// In this case the service has crashed before we could even do
+				// anything with it
+			}
+		}
+
+		public void onServiceDisconnected(ComponentName className) {
+			// This is called when the connection with the service has been
+			// unexpectedly disconnected - process crashed.
+			mService = null;
+			textStatus.setText("Disconnected.");
+		}
+	};
+
+	void doBindService() {
+		bindService(new Intent(this, LocalService.class), mConnection,
+				Context.BIND_AUTO_CREATE);
+		mIsBound = true;
+		textStatus.setText("Binding.");
+	}
+
+	void doUnbindService() {
+		if (mIsBound) {
+			// If we have received the service, and hence registered with it,
+			// then now is the time to unregister.
+			if (mService != null) {
+				try {
+					Message msg = Message.obtain(null,
+							LocalService.MSG_UNREGISTER_CLIENT);
+					msg.replyTo = mMessenger;
+					mService.send(msg);
+				} catch (RemoteException e) {
+					// There is nothing special we need to do if the service has
+					// crashed.
+				}
+			}
+			// Detach our existing connection.
+			unbindService(mConnection);
+			mIsBound = false;
+			textStatus.setText("Unbinding.");
+		}
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		try {
+			doUnbindService();
+		} catch (Throwable t) {
+			Log.e("MainActivity", "Failed to unbind from the service", t);
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +133,8 @@ public class MainActivity extends Activity {
 		Intent startServiceIntent = new Intent(context, LocalService.class);
 		// potentially add data to the intent
 		context.startService(startServiceIntent);
+
+		doBindService();
 	}
 
 	private class newClick implements OnClickListener {
