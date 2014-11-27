@@ -25,6 +25,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * This activity will display the general details of our one sensor Details
@@ -39,56 +40,19 @@ public class MainActivity extends Activity {
 	String sensorFileTitle;
 	Messenger mService = null;
 	boolean mIsBound;
-	final Messenger mMessenger = new Messenger(new IncomingHandler());
-	TextView textIntValue, textStrValue, textStatus;
-
-	// Maybe this can be used just to confirm the service wrote to file? this might be useless
-	class IncomingHandler extends Handler {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case LocalService.MSG_GET_SENSOR_NAME:
-				Message sensorName = Message.obtain(null,
-						LocalService.MSG_REGISTER_CLIENT);
-				sensorName.obj =  sensorFileTitle;
-				try {
-					mService.send(sensorName);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			case LocalService.MSG_SET_SENSOR_VALUES:
-				
-				// NO response needed from main activity?
-				String str1 = msg.getData().getString("str1");
-				textStrValue.setText("Str Message: " + str1);
-				break;
-			default:
-				super.handleMessage(msg);
-			}
-		}
-	}
+	LocalService mBoundService;
 
 	private ServiceConnection mConnection = new ServiceConnection() {
 		public void onServiceConnected(ComponentName className, IBinder service) {
-			mService = new Messenger(service);
-			textStatus.setText("Attached.");
-			try {
-				Message msg = Message.obtain(null,
-						LocalService.MSG_REGISTER_CLIENT);
-				msg.replyTo = mMessenger;
-				mService.send(msg);
-			} catch (RemoteException e) {
-				// In this case the service has crashed before we could even do
-				// anything with it
-			}
+			mBoundService = ((LocalService.LocalBinder) service).getService();
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
 			// This is called when the connection with the service has been
-			// unexpectedly disconnected - process crashed.
-			mService = null;
-			textStatus.setText("Disconnected.");
+			// unexpectedly disconnected -- that is, its process crashed.
+			// Because it is running in our same process, we should never
+			// see this happen.
+			mBoundService = null;
 		}
 	};
 
@@ -96,28 +60,16 @@ public class MainActivity extends Activity {
 		bindService(new Intent(this, LocalService.class), mConnection,
 				Context.BIND_AUTO_CREATE);
 		mIsBound = true;
-		textStatus.setText("Binding.");
 	}
 
 	void doUnbindService() {
 		if (mIsBound) {
 			// If we have received the service, and hence registered with it,
 			// then now is the time to unregister.
-			if (mService != null) {
-				try {
-					Message msg = Message.obtain(null,
-							LocalService.MSG_UNREGISTER_CLIENT);
-					msg.replyTo = mMessenger;
-					mService.send(msg);
-				} catch (RemoteException e) {
-					// There is nothing special we need to do if the service has
-					// crashed.
-				}
-			}
+
 			// Detach our existing connection.
 			unbindService(mConnection);
 			mIsBound = false;
-			textStatus.setText("Unbinding.");
 		}
 	}
 
@@ -144,6 +96,8 @@ public class MainActivity extends Activity {
 		// potentially add data to the intent
 		context.startService(startServiceIntent);
 
+		//TODO
+		// Binds to get data, but how do we set how often it binds?
 		doBindService();
 	}
 

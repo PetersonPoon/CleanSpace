@@ -1,25 +1,18 @@
 package com.example.cleanspace;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.Bundle;
-import android.os.Handler;
+import android.os.Binder;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.RemoteException;
 import android.util.Log;
 
 public class LocalService extends Service {
@@ -34,12 +27,14 @@ public class LocalService extends Service {
 			+ "/arduino/analog/3"; // Read
 	// humidity
 
+	// Set these values in order to bind them and send it back?
 	public double sensorTime = 1;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
 	public double temperatureValue;
 	public double dustVoltageMap;
+
 	public double DustDensity;
 	public String sensorName;
 
@@ -48,66 +43,22 @@ public class LocalService extends Service {
 	private static final String fairStatus = "Fair";
 	private static final String goodStatus = "Good";
 
-	int thisIsWrong;
-
-	ArrayList<Messenger> mClients = new ArrayList<Messenger>(); // Keeps track
-																// of all
-																// current
-																// registered
-																// clients.
-
-	// TODO: I don't quite get what these are for yet, but maybe we can make
-	// them for setting each string value for dust, co, humidity, temp?
-	int mValue = 0; // Holds last value set by a client.
-	static final int MSG_REGISTER_CLIENT = 1;
-	static final int MSG_UNREGISTER_CLIENT = 2;
-	static final int MSG_GET_SENSOR_NAME = 3;
-	static final int MSG_SET_SENSOR_VALUES = 4;
-	final Messenger mMessenger = new Messenger(new IncomingHandler()); // Target
-																		// we
-																		// publish
-																		// for
-																		// clients
-																		// to
-																		// send
-																		// messages
-																		// to
-																		// IncomingHandler.
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return mMessenger.getBinder();
-	}
-
-	class IncomingHandler extends Handler { // Handler of incoming messages from
-											// clients.
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case MSG_REGISTER_CLIENT:
-				mClients.add(msg.replyTo);
-				break;
-			case MSG_UNREGISTER_CLIENT:
-				mClients.remove(msg.replyTo);
-				break;
-			case MSG_GET_SENSOR_NAME:
-				sensorName = msg.toString();
-			case MSG_SET_SENSOR_VALUES:
-				// get all sensor values, write to file?
-				File readFile = new File(getExternalFilesDir(null), sensorName);
-
-				FileHelper.appendFile(readFile, DustDensity, coValue,
-						sensorTime, sensorStatus);
-				break;
-
-			default:
-				super.handleMessage(msg);
-			}
-		}
-	}
+	// Object that receives interactions with clients
+	private final IBinder mBinder = new LocalBinder();
 
 	// We use it on Notification start, and to cancel it.
 	private int NOTIFICATION = R.string.local_service_started;
+
+	/**
+	 * Class for clients to access. Because we know this service always runs in
+	 * the same process as its clients, we don't need to deal with IPC.
+	 */
+	public class LocalBinder extends Binder {
+		LocalService getService() {
+			return LocalService.this;
+		}
+
+	}
 
 	@Override
 	public void onCreate() {
@@ -121,8 +72,6 @@ public class LocalService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i("LocalService", "Received start id " + startId + ": " + intent);
-		// We want this service to continue running until it is explicitly
-		// stopped, so return sticky.
 
 		mStop = false;
 		if (threadReceive == null) {
@@ -135,6 +84,13 @@ public class LocalService extends Service {
 
 		UpdateStatus(dustValue, coValue);
 
+		// TODO How do we pass it a file name..I guess there would only be one sensor at a time?
+		// Write refreshed data into file for storage/graphing
+		FileHelper.appendFile(readFile, DustDensity, coValue, sensorTime,
+				sensorStatus);
+
+		// We want this service to continue running until it is explicitly
+		// stopped, so return sticky.
 		return Service.START_STICKY;
 	}
 
@@ -148,6 +104,14 @@ public class LocalService extends Service {
 		// Cancel the persistent notification.
 		notifyMan.cancel(NOTIFICATION);
 
+	}
+
+	/**
+	 * Return binder with sensor data each time it is binded to
+	 */
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mBinder;
 	}
 
 	/**
