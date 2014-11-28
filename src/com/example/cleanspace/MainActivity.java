@@ -3,9 +3,12 @@ package com.example.cleanspace;
 import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
 import java.io.File;
+import java.util.Calendar;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -46,8 +49,6 @@ public class MainActivity extends Activity {
 		public void onServiceDisconnected(ComponentName className) {
 			// This is called when the connection with the service has been
 			// unexpectedly disconnected -- that is, its process crashed.
-			// Because it is running in our same process, we should never
-			// see this happen.
 			mBoundService = null;
 		}
 	};
@@ -85,13 +86,8 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		populateButtons();
-		Context context = this;
 
-		// Start background service
-		// use this to start and trigger a service
-		Intent startServiceIntent = new Intent(context, LocalService.class);
-		// potentially add data to the intent
-		context.startService(startServiceIntent);
+		startService(new Intent(this, LocalService.class));
 
 		// TODO
 		// Binds to get data, but how do we set how often it binds?

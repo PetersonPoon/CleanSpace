@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -25,7 +27,7 @@ public class LocalService extends Service {
 	private String COUrl = "http://" + ARDUINO_IP_ADDRESS + "/arduino/analog/2"; // Read
 																					// CO
 	private String humidityUrl = "http://" + ARDUINO_IP_ADDRESS
-			+ "/arduino/analog/3"; // Read
+			+ "/arduino/digital/12"; // Read
 	// humidity
 
 	// Set these values in order to bind them and send it back?
@@ -55,25 +57,20 @@ public class LocalService extends Service {
 	 * the same process as its clients, we don't need to deal with IPC.
 	 */
 	public class LocalBinder extends Binder {
-		LocalService getService() { 
+		LocalService getService() {
 			return LocalService.this;
 		}
-
 	}
 
 	@Override
 	public void onCreate() {
 		notifyMan = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-		// So we know that service is happening. We should probably only call
-		// showNotification when status is bad for future
-		showNotification();
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.i("LocalService", "Received start id " + startId + ": " + intent);
-
+		Log.d("start", "Started");
 		mStop = false;
 		if (threadReceive == null) {
 			threadReceive = new Thread(networkRunnableReceive);
@@ -86,27 +83,30 @@ public class LocalService extends Service {
 		UpdateStatus(dustValue, coValue, humidityValue);
 
 		// TODO How do we pass it a file name..I guess there would only be one
-		// sensor at a time? lets call it abc for now
 		// Write refreshed data into file for storage/graphing
 
-		File readFile = new File(getExternalFilesDir(null), "abc");
+		File readFile = new File(getExternalFilesDir(null), "rf.txt");
 		FileHelper.appendFile(readFile, DustDensity, coValue, humidityValue,
 				temperatureValue, sensorTime, sensorStatus);
 
-		// We want this service to continue running until it is explicitly
-		// stopped, so return sticky.
-		return Service.START_STICKY;
+		// End service after doing work
+		stopSelf();
+		return Service.START_NOT_STICKY;
 	}
 
 	@Override
 	public void onDestroy() {
-
+		Log.d("destroy", "Detroyed");
 		mStop = true;
 		if (threadReceive != null) {
 			threadReceive.interrupt();
 		}
 		// Cancel the persistent notification.
 		notifyMan.cancel(NOTIFICATION);
+
+		AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarm.set(AlarmManager.RTC_WAKEUP, 5000, PendingIntent.getService(this,
+				0, new Intent(this, LocalService.class), 0));
 
 	}
 
@@ -205,7 +205,8 @@ public class LocalService extends Service {
 		// TODO CO value means nothing, just put in a value to test
 		if ((myDust >= 0.40) || (myCo >= 50) || (myHum >= 40)) {
 			sensorStatus = badStatus;
-			// setNotification(true);
+			// Alert the user
+			showNotification();
 		} else if ((myDust >= 0.3) || (myCo >= 20) || (myHum >= 30)) {
 			sensorStatus = fairStatus;
 		} else {
