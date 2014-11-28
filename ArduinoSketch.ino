@@ -1,56 +1,65 @@
 #include <YunServer.h>
 #include <Bridge.h>
 #include <YunClient.h>
+#include "DHT.h"
 
-// pin assignment to power the LED to detect dust in sensor
+#define DHTPIN 12
+#define DHTTYPE DHT22 
+
+//pin assignment to power the LED to detect dust in sensor
 int powerLED = 8; 
-
-// pin for reading analog data set up
 int sensorData = 0;
-
-// turn on LED for testing
+int coAnalogPin = A2;
 int ledPin = 12;
 
-//float HumidData;
+//variables used to store the collected sensor data
 float DustData;
-float CoData;
 float VoltageMap;
 float DustLevel;
+float CoData;
+float Humidity;
+float CTemperature;
+float FTemperature;
 
-int coAnalogPin = A2;
-
+DHT dht(DHTPIN, DHTTYPE);
 YunServer server(5555);
 
 void setup() {
 // initialize serial communication
-  Serial.begin(9600);
+   Serial.begin(9600);
 
-  Serial.println("Starting bridge...\n");
-     pinMode(8,OUTPUT); 
-     pinMode(12, OUTPUT);
-     pinMode(1,OUTPUT);
-     pinMode(13,OUTPUT);  
+   Serial.println("Starting bridge...\n");
+   pinMode(8,OUTPUT); 
+   pinMode(12, OUTPUT);
+   pinMode(1,OUTPUT);
+   pinMode(13,OUTPUT);  
       
       
 // make contact with the linux processor and turn on LED light when ready     
-     digitalWrite(13, LOW);  
-  Bridge.begin();
-     digitalWrite(13, HIGH); 
+   digitalWrite(13, LOW);  
+   Bridge.begin();
+   digitalWrite(13, HIGH); 
+  
+   dht.begin();
   
    server.noListenOnLocalhost();
    server.begin();
  }
 
 void loop() {
+   
    int pin;
    int value;
-    
+   
+//delay 2s to allow temperature to initialize
+   delay(2000); 
    YunClient client = server.accept();
    
 //Sample Optical Dust Sensor after 280us delay
    digitalWrite(powerLED,LOW);
    delayMicroseconds(280);
-/////// Read data from pins FOR TESTING PURPOSES ONLY////////////
+   
+//-------- Dust Sensor Data -------------------//
    DustData = analogRead(sensorData);
    digitalWrite(powerLED,HIGH);
    VoltageMap = (DustData * 3.3) / 1024.0;
@@ -58,61 +67,84 @@ void loop() {
    
    Serial.print("Raw Signal Value (0-1023): ");;
    Serial.print(DustData);
- 
    Serial.print(" - Voltage: ");
    Serial.print(VoltageMap);
- 
    Serial.print(" - Dust Density: ");
    Serial.println(DustLevel);
-/////////////////////////////////////////////////////////////////
+
+
+//-------- CO Sensor Data --------------------//
     
-    CoData = analogRead(coAnalogPin);
+   CoData = analogRead(coAnalogPin);
     
-    if (client) {
-      process(client);
-      client.stop();
-    }
+//-------- Temperature Sensor Data ----------//
+   Humidity = dht.readHumidity();
+   CTemperature = dht.readTemperature();
+   FTemperature = dht.readTemperature(true);
+
+   Serial.print("Humidity: "); 
+   Serial.print(Humidity);
+   Serial.print(" %\t");
+   Serial.print("Temperature: "); 
+   Serial.print(CTemperature);
+   Serial.print(" *C ");
+   Serial.print(FTemperature);
+   Serial.print(" *F\t");
+   
+//if no values are returned after read, print error message
+   if (isnan(Humidity) || isnan(CTemperature) || isnan(FTemperature)) {
+     Serial.println("Failed to read from DHT sensor!");
+     return;
+   }
+
+//process incoming client connection from mobile application 
+   if (client) {
+     process(client);
+     client.stop();
+   }
     
-    delay(1000);
+   delay(1000);
 }
 
+//process the client connection to digital/analog read
 void process(YunClient client) {
    String command = client.readStringUntil('/');
   
    if(command == "digital") {
- //Read from Sensor with Digital pins
- //digitalTime(client);
+     digitalTime(client);
    } 
    if(command == "analog") {
      analogTime(client);   
    }
 }
 
-void DigitalTime(YunClient client) {
+void digitalTime(YunClient client) {
    int pin;
    pin = client.parseInt();
+   
+   Serial.print("Digital Pin Number: ");
+   Serial.print(Humidity);
 
-//For testing purpose only      
-   Serial.print("Pin Number: ");
-   Serial.print(pin);
-//value = analogRead(pin);
-//client.print(____);
+   client.print(Humidity);
+   client.print(" ");
+   client.print(CTemperature);
+   client.print(" ");
+   client.print(FTemperature);
+
 }
-
 
 void analogTime(YunClient client) {
    int pin;
    pin = client.parseInt();
-
-//For testing purpose only      
-   Serial.print("Pin Number: ");
+    
+   Serial.print("Analog Pin Number: ");
    Serial.print(pin);
-//value = analogRead(pin);
-//Add if statement if multiple sensors use analog pins
-if(pin==1){
-   client.print(DustData);
-}
-   if(pin == 2){
-   client.print(CoData);
+   
+   if(pin == 1){
+     client.print(DustData);
    }
+   if(pin == 2){
+     client.print(CoData);
+   }
+
 }
