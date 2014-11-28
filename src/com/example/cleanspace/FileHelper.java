@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Environment;
-import android.util.Log;
 
 public class FileHelper {
 	/**
@@ -69,13 +68,16 @@ public class FileHelper {
 	 * @return
 	 */
 	public static void appendFile(File fileToWriteTo, double dustData,
-			double coData, double timeCollected, String sensorStatus) {
+			double coData, double humidityData, double temperatureData,
+			double timeCollected, String sensorStatus) {
 		if (isExternalStorageWriteable()) {
 			try {
 				OutputStream fos = new FileOutputStream(fileToWriteTo, true);
 				if (fileToWriteTo != null) {
 					String dustString = String.valueOf(dustData);
 					String coString = String.valueOf(coData);
+					String humidityString = String.valueOf(humidityData);
+					String temperatureString = String.valueOf(temperatureData);
 					String timeString = String.valueOf(timeCollected);
 
 					fos.write("Time Collected: ".getBytes());
@@ -86,6 +88,12 @@ public class FileHelper {
 					fos.write("/".getBytes());
 					fos.write("CO Data: ".getBytes());
 					fos.write(coString.getBytes());
+					fos.write("/".getBytes());
+					fos.write("Humidity Data: ".getBytes());
+					fos.write(humidityString.getBytes());
+					fos.write("/".getBytes());
+					fos.write("Temperature Data: ".getBytes());
+					fos.write(temperatureString.getBytes());
 					fos.write("/".getBytes());
 					fos.write("Status: ".getBytes());
 					fos.write(sensorStatus.getBytes());
@@ -101,65 +109,41 @@ public class FileHelper {
 	}
 
 	/**
-	 * For reading from file
+	 * Return most recent data field from file. (End of file) given a tag to
+	 * search for and file name
 	 * 
 	 * @param readFromFile
-	 * @return name and area
+	 * @param specificDataToGet
+	 * @return
 	 */
-	public static String readNameAndAreaFromFile(File readFromFile) {
-		String tempName = null;
-		String tempSampleArea = null;
+	public static String readSpecificFromFile(File readFromFile,
+			String specificDataToGet) {
+		String tagToParseFor = null;
 		String sensorNameString = "Sensor Name: ";
 		String sensorAreaString = "Sample Area: ";
-
-		String readLine;
-		String[] line;
-
-		if (isExternalStorageReadable()) {
-			try {
-				FileReader freader = new FileReader(readFromFile);
-				BufferedReader inputFile = new BufferedReader(freader);
-
-				List<String> arrayLine = new ArrayList<String>();
-
-				while ((readLine = inputFile.readLine()) != null) {
-					line = readLine.split("/");
-					for (int k = 0; k < line.length; k++) {
-						arrayLine.add(line[k]);
-					}
-				}
-
-				for (int i = arrayLine.size() - 1; i >= 0; i--) {
-					if (arrayLine.get(i).contains(sensorNameString)) {
-						tempName = arrayLine.get(i);
-						String[] nameSplit = tempName.split(":");
-						tempName = nameSplit[1].trim();
-
-					} else if (arrayLine.get(i).contains(sensorAreaString)) {
-						tempSampleArea = arrayLine.get(i);
-						String[] areaSplit = tempSampleArea.split(":");
-						tempSampleArea = areaSplit[1].trim();
-					}
-
-					if (tempName != null && tempSampleArea != null) {
-						i = 0;
-					}
-				}
-
-				inputFile.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		String readData = tempName + "," + tempSampleArea;
-		return readData;
-	}
-
-	public static String readStatusFromFile(File readFromFile) {
-		String currStatus = null;
+		String dustString = "Dust Data: ";
+		String coString = "CO Data: ";
+		String humidityString = "Humidity Data: ";
+		String temperatureString = "Temperature Data: ";
 		String statusString = "Status: ";
+		// For future use when graphing String timeString = "Time Collected: ";
+
+		if (specificDataToGet.equals("Name")) {
+			tagToParseFor = sensorNameString;
+		} else if (specificDataToGet.equalsIgnoreCase("Area")) {
+			tagToParseFor = sensorAreaString;
+		} else if (specificDataToGet.equalsIgnoreCase("Dust")) {
+			tagToParseFor = dustString;
+		} else if (specificDataToGet.equalsIgnoreCase("CO")) {
+			tagToParseFor = coString;
+		} else if (specificDataToGet.equalsIgnoreCase("Humidity")) {
+			tagToParseFor = humidityString;
+		} else if (specificDataToGet.equalsIgnoreCase("Temperature")) {
+			tagToParseFor = temperatureString;
+		} else if (specificDataToGet.equalsIgnoreCase("Status")) {
+			tagToParseFor = statusString;
+		}
+		String foundString = null;
 
 		String readLine;
 		String[] line;
@@ -179,13 +163,14 @@ public class FileHelper {
 				}
 
 				for (int i = arrayLine.size() - 1; i >= 0; i--) {
-					if (arrayLine.get(i).contains(statusString)) {
-						currStatus = arrayLine.get(i);
-						String[] statusSplit = currStatus.split(":");
-						currStatus = statusSplit[1].trim();
+					if (arrayLine.get(i).contains(tagToParseFor)) {
+						foundString = arrayLine.get(i);
+						String[] statusSplit = foundString.split(":");
+						foundString = statusSplit[1].trim();
 					}
-
-					if (currStatus != null) {
+					// Only take the name at the bottom of list, stop loop after
+					// it is found
+					if (foundString != null) {
 						i = 0;
 					}
 				}
@@ -196,9 +181,9 @@ public class FileHelper {
 				e.printStackTrace();
 			}
 		}
-		return currStatus;
-
+		return foundString;
 	}
+
 
 	public static boolean isExternalStorageWriteable() {
 		String state = Environment.getExternalStorageState();

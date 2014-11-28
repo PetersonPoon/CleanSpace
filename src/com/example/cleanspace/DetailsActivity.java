@@ -29,7 +29,7 @@ public class DetailsActivity extends Activity {
 																					// CO
 	// TODO Change this for Humidity
 	private String humidityUrl = "http://" + ARDUINO_IP_ADDRESS
-			+ "/arduino/analog/3"; // Read
+			+ "/arduino/digital/12"; // Read
 	// humidity
 
 	public double sensorTime = 1;
@@ -69,13 +69,13 @@ public class DetailsActivity extends Activity {
 	}
 
 	@Override
-		protected void onStop() {
-			mStop = true;
-			if (threadReceive != null) {
-				threadReceive.interrupt();
-			}
-			super.onStop();
+	protected void onStop() {
+		mStop = true;
+		if (threadReceive != null) {
+			threadReceive.interrupt();
 		}
+		super.onStop();
+	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -126,7 +126,7 @@ public class DetailsActivity extends Activity {
 		/**
 		 * Change status text colour depending on status
 		 */
-		sensorStatus = UpdateStatus(DustDensity, coValue);
+		sensorStatus = UpdateStatus(DustDensity, coValue, humidityValue);
 		myText.setText(String.valueOf(sensorStatus));
 		if (sensorStatus == badStatus) {
 			myText.setTextColor(Color.RED);
@@ -148,9 +148,16 @@ public class DetailsActivity extends Activity {
 				try {
 					String dustString = readFROMURL(dustUrl);
 					String coString = readFROMURL(COUrl);
+					String humTempString = readFROMURL(humidityUrl);
+
 					try {
 						dustValue = Double.parseDouble(dustString);
 						coValue = Double.parseDouble(coString);
+
+						String[] humidityTemp = humTempString.split("\\s+");
+						humidityValue = Double.parseDouble(humidityTemp[0]);
+						temperatureValue = Double.parseDouble(humidityTemp[1]);
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -194,13 +201,13 @@ public class DetailsActivity extends Activity {
 		DustDensity = (0.17 * dustVoltageMap) - 0.1;
 	}
 
-	public String UpdateStatus(double myDust, double myCo) {
+	public String UpdateStatus(double myDust, double myCo, double myHum) {
 		// Testing for now will refine the data later
 		// TODO CO value means nothing, just put in a value to test
-		if ((myDust >= 0.40) || (myCo >= 50)) {
+		if ((myDust >= 0.40) || (myCo >= 50) || (myHum >= 40)) {
 			sensorStatus = badStatus;
-//			setNotification(true);
-		} else if ((myDust >= 0.3) || (myCo >= 20)) {
+			// setNotification(true);
+		} else if ((myDust >= 0.3) || (myCo >= 20) || (myHum >= 30)) {
 			sensorStatus = fairStatus;
 		} else {
 			sensorStatus = goodStatus;
@@ -215,18 +222,21 @@ public class DetailsActivity extends Activity {
 			sensorFileName = intent.getStringExtra(SENSORFILENAME);
 			File readFile = new File(getExternalFilesDir(null), sensorFileName);
 
-			String readData = FileHelper.readNameAndAreaFromFile(readFile);
-			String[] sensorData = readData.split(",");
+			String sensorName = FileHelper.readSpecificFromFile(readFile,
+					"Name");
+			String sensorArea = FileHelper.readSpecificFromFile(readFile,
+					"Area");
 
-			if (sensorData != null) {
+			if (sensorName != null && sensorArea != null) {
 				TextView sensorTitle = (TextView) findViewById(R.id.sensor_title);
-				sensorTitle.setText(sensorData[0]);
+				sensorTitle.setText(sensorName);
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
-				sampleArea.setText(sensorData[1]);
+				sampleArea.setText(sensorArea);
 
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
-						sensorTime, sensorStatus);
+						humidityValue, temperatureValue, sensorTime,
+						sensorStatus);
 			}
 
 		} else {
@@ -245,6 +255,16 @@ public class DetailsActivity extends Activity {
 		TextView coCount = (TextView) findViewById(R.id.co_value);
 		String co = String.valueOf(coValue);
 		coCount.setText(co);
+
+		// Load humidity count to app
+		TextView humCount = (TextView) findViewById(R.id.current_humidity);
+		String humidity = String.valueOf(humidityValue);
+		humCount.setText(humidity);
+
+		// Load CO count to app
+		TextView tempCount = (TextView) findViewById(R.id.current_temperature);
+		String temp = String.valueOf(temperatureValue);
+		tempCount.setText(temp);
 
 	}
 }
