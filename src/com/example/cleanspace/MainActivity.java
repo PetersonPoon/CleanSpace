@@ -3,12 +3,9 @@ package com.example.cleanspace;
 import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
 import java.io.File;
-import java.util.Calendar;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -86,7 +83,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		populateButtons();
-		
+
 		startService(new Intent(this, LocalService.class));
 
 		// TODO
@@ -103,7 +100,7 @@ public class MainActivity extends Activity {
 
 		public void onClick(View view) {
 			Intent detailsIntent = new Intent(MainActivity.this,
-					DetailsActivity.class);
+					TabHolder.class);
 			// view.
 			detailsIntent.putExtra(SENSORFILENAME, btnString);
 			MainActivity.this.startActivity(detailsIntent);

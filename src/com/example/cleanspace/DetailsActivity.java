@@ -11,10 +11,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +22,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DetailsActivity extends Activity {
+public class DetailsActivity extends FragmentActivity {
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
 	private Boolean mStop = false;
 	private String dustUrl = "http://" + ARDUINO_IP_ADDRESS
@@ -281,8 +281,8 @@ public class DetailsActivity extends Activity {
 	public void ignoredButton(View view) {
 		LocalService.cancelNotification();
 	}
-	
-	public void changedButton(View view){
+
+	public void changedButton(View view) {
 		LocalService.cancelNotification();
 		fillSensorFields();
 	}
