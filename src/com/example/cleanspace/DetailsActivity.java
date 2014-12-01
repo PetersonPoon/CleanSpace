@@ -15,8 +15,10 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,7 +34,7 @@ public class DetailsActivity extends Activity {
 			+ "/arduino/digital/12"; // Read
 	// humidity
 
-	public double sensorTime = 1;
+	public double sensorTime;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
@@ -54,8 +56,6 @@ public class DetailsActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_details);
-
-		fillSensorFields();
 	}
 
 	@Override
@@ -65,6 +65,8 @@ public class DetailsActivity extends Activity {
 			threadReceive = new Thread(networkRunnableReceive);
 			threadReceive.start();
 		}
+		fillSensorFields();
+
 		super.onStart();
 	}
 
@@ -154,6 +156,11 @@ public class DetailsActivity extends Activity {
 						dustValue = Double.parseDouble(dustString);
 						coValue = Double.parseDouble(coString);
 
+						String dust = String.valueOf(dustValue);
+						String co = String.valueOf(coValue);
+
+						Log.d("dust", dust);
+						Log.d("co", co);
 						String[] humidityTemp = humTempString.split("\\s+");
 						humidityValue = Double.parseDouble(humidityTemp[0]);
 						temperatureValue = Double.parseDouble(humidityTemp[1]);
@@ -206,9 +213,11 @@ public class DetailsActivity extends Activity {
 		// TODO CO value means nothing, just put in a value to test
 		if ((myDust >= 0.40) || (myCo >= 50) || (myHum >= 40)) {
 			sensorStatus = badStatus;
+
 			// setNotification(true);
 		} else if ((myDust >= 0.3) || (myCo >= 20) || (myHum >= 30)) {
 			sensorStatus = fairStatus;
+
 		} else {
 			sensorStatus = goodStatus;
 		}
@@ -233,6 +242,7 @@ public class DetailsActivity extends Activity {
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
 				sampleArea.setText(sensorArea);
 
+				sensorTime = System.currentTimeMillis();
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
 						humidityValue, temperatureValue, sensorTime,
@@ -266,5 +276,14 @@ public class DetailsActivity extends Activity {
 		String temp = String.valueOf(temperatureValue);
 		tempCount.setText(temp);
 
+	}
+
+	public void ignoredButton(View view) {
+		LocalService.cancelNotification();
+	}
+	
+	public void changedButton(View view){
+		LocalService.cancelNotification();
+		fillSensorFields();
 	}
 }

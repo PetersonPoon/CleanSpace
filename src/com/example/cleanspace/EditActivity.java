@@ -55,11 +55,11 @@ public class EditActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			onBackPressed();
 
 			return true;
 		}
-		return super.onOptionsItemSelected(item);
+		super.onBackPressed();
+		return true;
 	}
 
 	public void saveEditActivity(View view) {

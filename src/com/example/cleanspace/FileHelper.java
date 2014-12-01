@@ -86,7 +86,7 @@ public class FileHelper {
 					fos.write("Dust Data: ".getBytes());
 					fos.write(dustString.getBytes());
 					fos.write("/".getBytes());
-					fos.write("CO Data: ".getBytes());
+					fos.write("CO Data: ".getBytes()); 
 					fos.write(coString.getBytes());
 					fos.write("/".getBytes());
 					fos.write("Humidity Data: ".getBytes());
