@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		populateButtons();
-
+		
 		startService(new Intent(this, LocalService.class));
 
 		// TODO

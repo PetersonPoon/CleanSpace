@@ -197,6 +197,7 @@
         android:layout_toRightOf="@+id/details_title"
         android:background="@drawable/circle"
         android:text="@string/changed"
+        android:onClick="changedButton"
         android:textColor="#16b116"
         android:textSize="12sp" />
 
@@ -211,6 +212,7 @@
         android:background="@drawable/circle"
         android:text="@string/ignored"
         android:textColor="#16b116"
+        android:onClick="ignoredButton"
         android:textSize="12sp" />
 
 </RelativeLayout>

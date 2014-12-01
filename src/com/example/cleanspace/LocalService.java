@@ -20,7 +20,7 @@ import android.util.Log;
 
 public class LocalService extends Service {
 	private Boolean mStop = false;
-	private NotificationManager notifyMan;
+	private static NotificationManager notifyMan;
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
 	private String dustUrl = "http://" + ARDUINO_IP_ADDRESS
 			+ "/arduino/analog/1"; // Read dust
@@ -31,7 +31,7 @@ public class LocalService extends Service {
 	// humidity
 
 	// Set these values in order to bind them and send it back?
-	public double sensorTime = 1;
+	public double sensorTime;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
@@ -50,7 +50,7 @@ public class LocalService extends Service {
 	private final IBinder mBinder = new LocalBinder();
 
 	// We use it on Notification start, and to cancel it.
-	private int NOTIFICATION = R.string.local_service_started;
+	public static int NOTIFICATION = R.string.local_service_started;
 
 	/**
 	 * Class for clients to access. Because we know this service always runs in
@@ -69,25 +69,26 @@ public class LocalService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i("LocalService", "Received start id " + startId + ": " + intent);
-		Log.d("start", "Started");
 		mStop = false;
 		if (threadReceive == null) {
 			threadReceive = new Thread(networkRunnableReceive);
 			threadReceive.start();
 		}
 
-		// TODO: iS THIS IN THE RIGHT PLACE?
 		CalcLevel(dustValue);
 
 		UpdateStatus(dustValue, coValue, humidityValue);
 
-		// TODO How do we pass it a file name..I guess there would only be one
-		// Write refreshed data into file for storage/graphing
+		sensorTime = System.currentTimeMillis();
 
-		File readFile = new File(getExternalFilesDir(null), "rf.txt");
-		FileHelper.appendFile(readFile, DustDensity, coValue, humidityValue,
-				temperatureValue, sensorTime, sensorStatus);
+		// Write refreshed data into file for storage/graphing
+		File readFile = new File(getExternalFilesDir(null), "");
+		File file[] = readFile.listFiles();
+
+		for (int i = 0; i < file.length; i++) {
+			FileHelper.appendFile(file[i], DustDensity, coValue, humidityValue,
+					temperatureValue, sensorTime, sensorStatus);
+		}
 
 		// End service after doing work
 		stopSelf();
@@ -105,8 +106,8 @@ public class LocalService extends Service {
 		notifyMan.cancel(NOTIFICATION);
 
 		AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
-		alarm.set(AlarmManager.RTC_WAKEUP, 5000, PendingIntent.getService(this,
-				0, new Intent(this, LocalService.class), 0));
+		alarm.set(AlarmManager.RTC_WAKEUP, 10000, PendingIntent.getService(
+				this, 0, new Intent(this, LocalService.class), 0));
 
 	}
 
@@ -118,11 +119,15 @@ public class LocalService extends Service {
 		return mBinder;
 	}
 
+	public static void cancelNotification() {
+		notifyMan.cancel(NOTIFICATION);
+	}
+
 	/**
 	 * Show a notification while this service is running for now, but will be
 	 * used to notify user when status is bad in future
 	 */
-	private void showNotification() {
+	public void showNotification() {
 		// The PendingIntent to launch our activity if the user selects this
 		// notification
 		Intent intent = new Intent(this, MainActivity.class);
@@ -205,12 +210,14 @@ public class LocalService extends Service {
 		// TODO CO value means nothing, just put in a value to test
 		if ((myDust >= 0.40) || (myCo >= 50) || (myHum >= 40)) {
 			sensorStatus = badStatus;
-			// Alert the user
 			showNotification();
+			// Alert the user
 		} else if ((myDust >= 0.3) || (myCo >= 20) || (myHum >= 30)) {
 			sensorStatus = fairStatus;
+			showNotification();
 		} else {
 			sensorStatus = goodStatus;
+			showNotification();
 		}
 		return sensorStatus;
 	}
