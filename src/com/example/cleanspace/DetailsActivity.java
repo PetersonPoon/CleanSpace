@@ -286,4 +286,13 @@ public class DetailsActivity extends FragmentActivity {
 		LocalService.cancelNotification();
 		fillSensorFields();
 	}
+
+	public void graphButton(View view) {
+		Intent graphIntent = new Intent(DetailsActivity.this,
+				GraphActivity.class);
+
+		graphIntent.putExtra(SENSORFILENAME, sensorFileName);
+		DetailsActivity.this.startActivity(graphIntent);
+
+	}
 }

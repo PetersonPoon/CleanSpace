@@ -1,20 +1,71 @@
 package com.example.cleanspace;
 
-import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import java.io.File;
+import java.util.ArrayList;
 
-public class GraphActivity extends Fragment {
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.MenuItem;
+import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
+
+public class GraphActivity extends Activity {
+
+	String sensorFileName;
+	File readFromFile;
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_graph);
 
-		View rootView = inflater.inflate(R.layout.fragment_graph, container,
-				false);
+		Intent intent = getIntent();
+		if (null != intent) {
+			sensorFileName = intent.getStringExtra(SENSORFILENAME);
+		}
+		readFromFile = new File(getExternalFilesDir(null), sensorFileName);
+	}
 
-		return rootView;
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+
+			return true;
+		}
+		super.onBackPressed();
+		return true;
+	}
+
+	public void graphDustData() {
+
+		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
+				readFromFile, "Dust");
+
+		// Do some graphing stuff
+	}
+
+	public void graphCoData() {
+
+		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
+				readFromFile, "CO");
+
+		// Do some graphing stuff
+	}
+
+	public void graphHumidityData() {
+
+		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
+				readFromFile, "Humidity");
+
+		// Do some graphing stuff
+	}
+
+	public void graphTempData() {
+
+		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
+				readFromFile, "Temperature");
+
+		// Do some graphing stuff
 	}
 }

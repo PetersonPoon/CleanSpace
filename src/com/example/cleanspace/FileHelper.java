@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.os.Environment;
+import android.util.Log;
 
 public class FileHelper {
 	/**
@@ -86,7 +87,7 @@ public class FileHelper {
 					fos.write("Dust Data: ".getBytes());
 					fos.write(dustString.getBytes());
 					fos.write("/".getBytes());
-					fos.write("CO Data: ".getBytes()); 
+					fos.write("CO Data: ".getBytes());
 					fos.write(coString.getBytes());
 					fos.write("/".getBytes());
 					fos.write("Humidity Data: ".getBytes());
@@ -184,6 +185,72 @@ public class FileHelper {
 		return foundString;
 	}
 
+	public static ArrayList<String> readSpecificForGraph(File readFromFile,
+			String specificDataToGet) {
+
+		String tagToParseFor = null;
+		String sensorNameString = "Sensor Name: ";
+		String sensorAreaString = "Sample Area: ";
+		String dustString = "Dust Data: ";
+		String coString = "CO Data: ";
+		String humidityString = "Humidity Data: ";
+		String temperatureString = "Temperature Data: ";
+		String statusString = "Status: ";
+		String timeString = "Time Collected: ";
+
+		if (specificDataToGet.equals("Name")) {
+			tagToParseFor = sensorNameString;
+		} else if (specificDataToGet.equalsIgnoreCase("Area")) {
+			tagToParseFor = sensorAreaString;
+		} else if (specificDataToGet.equalsIgnoreCase("Dust")) {
+			tagToParseFor = dustString;
+		} else if (specificDataToGet.equalsIgnoreCase("CO")) {
+			tagToParseFor = coString;
+		} else if (specificDataToGet.equalsIgnoreCase("Humidity")) {
+			tagToParseFor = humidityString;
+		} else if (specificDataToGet.equalsIgnoreCase("Temperature")) {
+			tagToParseFor = temperatureString;
+		} else if (specificDataToGet.equalsIgnoreCase("Status")) {
+			tagToParseFor = statusString;
+		}
+
+		String readLine;
+		String[] line;
+		ArrayList<String> graphArray = null;
+
+		if (isExternalStorageReadable()) {
+			try {
+				FileReader freader = new FileReader(readFromFile);
+				BufferedReader inputFile = new BufferedReader(freader);
+
+				List<String> arrayLine = new ArrayList<String>();
+
+				while ((readLine = inputFile.readLine()) != null) {
+					line = readLine.split("/");
+					for (int k = 0; k < line.length; k++) {
+						arrayLine.add(line[k]);
+					}
+				}
+
+				// This is for graphing. Go through list of data with no
+				// slashes, take the tag we need and the time
+				graphArray = new ArrayList<String>();
+				for (int i = 0; i >= arrayLine.size(); i++) {
+					if (arrayLine.get(i).contains(tagToParseFor)
+							|| arrayLine.get(i).contains(timeString)) {
+						graphArray.add(arrayLine.get(i));
+					}
+				}
+				inputFile.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		Log.d("graphdata", graphArray.toString());
+		return graphArray;
+	}
 
 	public static boolean isExternalStorageWriteable() {
 		String state = Environment.getExternalStorageState();

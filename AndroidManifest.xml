@@ -42,6 +42,10 @@
             android:parentActivityName=".DetailsActivity" >
         </activity>
         <activity
+            android:name=".GraphActivity"
+            android:parentActivityName=".DetailsActivity" >
+        </activity>
+        <activity
             android:name=".FileHelper"
             android:label="@string/title_activity_save_helper" >
         </activity>

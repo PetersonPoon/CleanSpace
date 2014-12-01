@@ -100,7 +100,7 @@ public class MainActivity extends Activity {
 
 		public void onClick(View view) {
 			Intent detailsIntent = new Intent(MainActivity.this,
-					TabHolder.class);
+					DetailsActivity.class);
 			// view.
 			detailsIntent.putExtra(SENSORFILENAME, btnString);
 			MainActivity.this.startActivity(detailsIntent);
