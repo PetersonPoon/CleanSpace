@@ -85,9 +85,6 @@ public class LocalService extends Service {
 		sensorTimeMilli = System.currentTimeMillis();
 		long sensorTimeHours = TimeUnit.MILLISECONDS.toHours(sensorTimeMilli);
 
-		String time = String.valueOf(sensorTimeHours);
-		Log.d("sensorTime", time);
-
 		// Write refreshed data into file for storage/graphing
 		File readFile = new File(getExternalFilesDir(null), "");
 		File file[] = readFile.listFiles();

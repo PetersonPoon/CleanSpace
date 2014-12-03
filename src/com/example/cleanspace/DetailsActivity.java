@@ -124,8 +124,8 @@ public class DetailsActivity extends FragmentActivity {
 	private void fillSensorFields() {
 		// Get Dust data
 		TextView myText = (TextView) findViewById(R.id.currentStatus);
-		if (dustValue > 0) {
-			CalcLevel(dustValue);
+		if(dustValue > 0){
+		CalcLevel(dustValue);
 		}
 
 		/**

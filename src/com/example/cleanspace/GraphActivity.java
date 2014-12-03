@@ -76,10 +76,10 @@ public class GraphActivity extends Activity {
 			timeVal = timeSplit.split(": ");
 
 			double dustReading = Double.parseDouble(dustVal[1]);
-			// double time = Integer.parseInt(timeVal[1]);
+			double time = Double.parseDouble(timeVal[1]);
 			
 
-			plotData[plotSize] = new GraphViewData(x, dustReading);
+			plotData[plotSize] = new GraphViewData(time, dustReading);
 			plotSize++;
 			x++;
 		}
