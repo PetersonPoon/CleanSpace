@@ -70,7 +70,7 @@ public class FileHelper {
 	 */
 	public static void appendFile(File fileToWriteTo, double dustData,
 			double coData, double humidityData, double temperatureData,
-			double timeCollected, String sensorStatus) {
+			long timeCollected, String sensorStatus) {
 		if (isExternalStorageWriteable()) {
 			try {
 				OutputStream fos = new FileOutputStream(fileToWriteTo, true);
@@ -235,7 +235,7 @@ public class FileHelper {
 				// This is for graphing. Go through list of data with no
 				// slashes, take the tag we need and the time
 				graphArray = new ArrayList<String>();
-				for (int i = 0; i >= arrayLine.size(); i++) {
+				for (int i = 0; i < arrayLine.size(); i++) {
 					if (arrayLine.get(i).contains(tagToParseFor)
 							|| arrayLine.get(i).contains(timeString)) {
 						graphArray.add(arrayLine.get(i));

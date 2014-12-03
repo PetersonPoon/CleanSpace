@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -34,7 +35,7 @@ public class DetailsActivity extends FragmentActivity {
 			+ "/arduino/digital/12"; // Read
 	// humidity
 
-	public double sensorTime;
+	public long sensorTimeMilli;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
@@ -123,7 +124,9 @@ public class DetailsActivity extends FragmentActivity {
 	private void fillSensorFields() {
 		// Get Dust data
 		TextView myText = (TextView) findViewById(R.id.currentStatus);
-		CalcLevel(dustValue);
+		if (dustValue > 0) {
+			CalcLevel(dustValue);
+		}
 
 		/**
 		 * Change status text colour depending on status
@@ -242,10 +245,15 @@ public class DetailsActivity extends FragmentActivity {
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
 				sampleArea.setText(sensorArea);
 
-				sensorTime = System.currentTimeMillis();
+				sensorTimeMilli = System.currentTimeMillis();
+				long sensorTimeHours = TimeUnit.MILLISECONDS
+						.toHours(sensorTimeMilli);
+
+				String time = String.valueOf(sensorTimeHours);
+				Log.d("sensorTime", time);
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
-						humidityValue, temperatureValue, sensorTime,
+						humidityValue, temperatureValue, sensorTimeHours,
 						sensorStatus);
 			}
 
