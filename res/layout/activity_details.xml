@@ -196,8 +196,8 @@
         android:layout_toEndOf="@+id/details_title"
         android:layout_toRightOf="@+id/details_title"
         android:background="@drawable/circle"
-        android:text="@string/changed"
         android:onClick="changedButton"
+        android:text="@string/changed"
         android:textColor="#16b116"
         android:textSize="12sp" />
 
@@ -206,13 +206,27 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_below="@+id/current_area"
+        android:layout_marginEnd="50dp"
+        android:layout_marginRight="50dp"
         android:layout_marginTop="30dp"
-        android:layout_toLeftOf="@+id/particle_value"
-        android:layout_toStartOf="@+id/particle_value"
+        android:layout_toLeftOf="@+id/current_area"
+        android:layout_toStartOf="@+id/current_area"
         android:background="@drawable/circle"
+        android:onClick="ignoredButton"
         android:text="@string/ignored"
         android:textColor="#16b116"
-        android:onClick="ignoredButton"
         android:textSize="12sp" />
+
+    <Button
+        android:id="@+id/graphButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginEnd="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="250dp"
+        android:background="@drawable/perm_group_calendar"
+        android:onClick="graphButton" />
 
 </RelativeLayout>

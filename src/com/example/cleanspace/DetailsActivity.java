@@ -10,11 +10,12 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,7 +23,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DetailsActivity extends Activity {
+public class DetailsActivity extends FragmentActivity {
 	public final String ARDUINO_IP_ADDRESS = "192.168.240.1";
 	private Boolean mStop = false;
 	private String dustUrl = "http://" + ARDUINO_IP_ADDRESS
@@ -34,7 +35,7 @@ public class DetailsActivity extends Activity {
 			+ "/arduino/digital/12"; // Read
 	// humidity
 
-	public double sensorTime;
+	public long sensorTimeMilli;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
@@ -123,7 +124,9 @@ public class DetailsActivity extends Activity {
 	private void fillSensorFields() {
 		// Get Dust data
 		TextView myText = (TextView) findViewById(R.id.currentStatus);
+		if(dustValue > 0){
 		CalcLevel(dustValue);
+		}
 
 		/**
 		 * Change status text colour depending on status
@@ -242,10 +245,10 @@ public class DetailsActivity extends Activity {
 				TextView sampleArea = (TextView) findViewById(R.id.current_area);
 				sampleArea.setText(sensorArea);
 
-				sensorTime = System.currentTimeMillis();
+				sensorTimeMilli = System.currentTimeMillis();
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
-						humidityValue, temperatureValue, sensorTime,
+						humidityValue, temperatureValue, sensorTimeMilli,
 						sensorStatus);
 			}
 
@@ -281,9 +284,18 @@ public class DetailsActivity extends Activity {
 	public void ignoredButton(View view) {
 		LocalService.cancelNotification();
 	}
-	
-	public void changedButton(View view){
+
+	public void changedButton(View view) {
 		LocalService.cancelNotification();
 		fillSensorFields();
+	}
+
+	public void graphButton(View view) {
+		Intent graphIntent = new Intent(DetailsActivity.this,
+				GraphActivity.class);
+
+		graphIntent.putExtra(SENSORFILENAME, sensorFileName);
+		DetailsActivity.this.startActivity(graphIntent);
+
 	}
 }

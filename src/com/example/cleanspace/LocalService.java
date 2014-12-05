@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.concurrent.TimeUnit;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -31,7 +32,7 @@ public class LocalService extends Service {
 	// humidity
 
 	// Set these values in order to bind them and send it back?
-	public double sensorTime;
+	public long sensorTimeMilli;
 	public double dustValue;
 	public double coValue;
 	public double humidityValue;
@@ -75,11 +76,13 @@ public class LocalService extends Service {
 			threadReceive.start();
 		}
 
-		CalcLevel(dustValue);
+		if (dustValue > 0) {
+			CalcLevel(dustValue);
+		}
 
 		UpdateStatus(dustValue, coValue, humidityValue);
 
-		sensorTime = System.currentTimeMillis();
+		sensorTimeMilli = System.currentTimeMillis();
 
 		// Write refreshed data into file for storage/graphing
 		File readFile = new File(getExternalFilesDir(null), "");
@@ -87,7 +90,7 @@ public class LocalService extends Service {
 
 		for (int i = 0; i < file.length; i++) {
 			FileHelper.appendFile(file[i], DustDensity, coValue, humidityValue,
-					temperatureValue, sensorTime, sensorStatus);
+					temperatureValue, sensorTimeMilli, sensorStatus);
 		}
 
 		// End service after doing work
@@ -106,7 +109,7 @@ public class LocalService extends Service {
 		notifyMan.cancel(NOTIFICATION);
 
 		AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
-		alarm.set(AlarmManager.RTC_WAKEUP, 10000, PendingIntent.getService(
+		alarm.set(AlarmManager.RTC_WAKEUP, 3600000, PendingIntent.getService(
 				this, 0, new Intent(this, LocalService.class), 0));
 
 	}
@@ -217,7 +220,6 @@ public class LocalService extends Service {
 			showNotification();
 		} else {
 			sensorStatus = goodStatus;
-			showNotification();
 		}
 		return sensorStatus;
 	}

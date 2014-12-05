@@ -3,12 +3,9 @@ package com.example.cleanspace;
 import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
 
 import java.io.File;
-import java.util.Calendar;
 
 import android.app.ActionBar.LayoutParams;
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -38,6 +35,7 @@ public class MainActivity extends Activity {
 	String sensorFileTitle;
 	Messenger mService = null;
 	boolean mIsBound;
+	Boolean serviceStarted = false;
 
 	LocalService mBoundService;
 
@@ -71,6 +69,11 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	public void startService() {
+		startService(new Intent(this, LocalService.class));
+		doBindService();
+	}
+
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
@@ -82,16 +85,23 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
+	protected void onStart() {
+		File f = new File(getExternalFilesDir(null), "");
+		File file[] = f.listFiles();
+
+		if (file.length != 0 && serviceStarted == false) {
+			startService();
+			serviceStarted = true;
+		}
+
+		super.onStart();
+	}
+
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		populateButtons();
-		
-		startService(new Intent(this, LocalService.class));
-
-		// TODO
-		// Binds to get data, but how do we set how often it binds?
-		doBindService();
 	}
 
 	private class newClick implements OnClickListener {
