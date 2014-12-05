@@ -83,7 +83,6 @@ public class LocalService extends Service {
 		UpdateStatus(dustValue, coValue, humidityValue);
 
 		sensorTimeMilli = System.currentTimeMillis();
-		long sensorTimeHours = TimeUnit.MILLISECONDS.toHours(sensorTimeMilli);
 
 		// Write refreshed data into file for storage/graphing
 		File readFile = new File(getExternalFilesDir(null), "");
@@ -91,7 +90,7 @@ public class LocalService extends Service {
 
 		for (int i = 0; i < file.length; i++) {
 			FileHelper.appendFile(file[i], DustDensity, coValue, humidityValue,
-					temperatureValue, sensorTimeHours, sensorStatus);
+					temperatureValue, sensorTimeMilli, sensorStatus);
 		}
 
 		// End service after doing work
@@ -221,7 +220,6 @@ public class LocalService extends Service {
 			showNotification();
 		} else {
 			sensorStatus = goodStatus;
-			showNotification();
 		}
 		return sensorStatus;
 	}

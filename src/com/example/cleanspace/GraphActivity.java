@@ -1,21 +1,24 @@
 package com.example.cleanspace;
 
+import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
+
 import java.io.File;
 import java.util.ArrayList;
-
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GraphView.GraphViewData;
-import com.jjoe64.graphview.GraphViewDataInterface;
-import com.jjoe64.graphview.GraphViewSeries;
-import com.jjoe64.graphview.LineGraphView;
+import java.util.Date;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import static com.example.cleanspace.DetailsActivity.SENSORFILENAME;
+
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GraphView.GraphViewData;
+import com.jjoe64.graphview.GraphViewSeries;
+import com.jjoe64.graphview.LineGraphView;
 
 public class GraphActivity extends Activity {
 
@@ -31,16 +34,16 @@ public class GraphActivity extends Activity {
 		if (null != intent) {
 			sensorFileName = intent.getStringExtra(SENSORFILENAME);
 		}
-		
-		readFromFile = new File(getExternalFilesDir(null), sensorFileName);
-		
-		TextView sensorName = (TextView) findViewById(R.id.sensor_title);
-		
 
-		String gotSensorName = FileHelper.readSpecificFromFile(readFromFile, "Name");
-		
+		readFromFile = new File(getExternalFilesDir(null), sensorFileName);
+
+		TextView sensorName = (TextView) findViewById(R.id.sensor_title);
+
+		String gotSensorName = FileHelper.readSpecificFromFile(readFromFile,
+				"Name");
+
 		sensorName.setText(gotSensorName);
-		
+
 		graphDustData();
 	}
 
@@ -60,7 +63,7 @@ public class GraphActivity extends Activity {
 		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
 				readFromFile, "Dust");
 
-		GraphViewData[] plotData = new GraphViewData[graphData.size()/2];
+		GraphViewData[] plotData = new GraphViewData[graphData.size() / 2];
 		int plotSize = 0;
 		double x = 0;
 		for (int i = 0; i < graphData.size() - 1; i = i + 2) {
@@ -77,7 +80,8 @@ public class GraphActivity extends Activity {
 
 			double dustReading = Double.parseDouble(dustVal[1]);
 			double time = Double.parseDouble(timeVal[1]);
-			
+//			String format = formatLabel(time, true);
+//			Log.d("Format", format);
 
 			plotData[plotSize] = new GraphViewData(time, dustReading);
 			plotSize++;
@@ -85,8 +89,9 @@ public class GraphActivity extends Activity {
 		}
 
 		/*
-		 GraphViewSeries dustPlot = new GraphViewSeries(new GraphViewData[] {
-		 new GraphViewData(1, 3), new GraphViewData(2, 1.5), new GraphViewData(3, 5) });
+		 * GraphViewSeries dustPlot = new GraphViewSeries(new GraphViewData[] {
+		 * new GraphViewData(1, 3), new GraphViewData(2, 1.5), new
+		 * GraphViewData(3, 5) });
 		 */
 
 		// GraphViewSeries dustPlot = new GraphViewSeries(new
@@ -101,27 +106,16 @@ public class GraphActivity extends Activity {
 		// Do some graphing stuff
 	}
 
-	public void graphCoData() {
-
-		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
-				readFromFile, "CO");
-
-		// Do some graphing stuff
-	}
-
-	public void graphHumidityData() {
-
-		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
-				readFromFile, "Humidity");
-
-		// Do some graphing stuff
-	}
-
-	public void graphTempData() {
-
-		ArrayList<String> graphData = FileHelper.readSpecificForGraph(
-				readFromFile, "Temperature");
-
-		// Do some graphing stuff
-	}
 }
+// final java.text.DateFormat dateTimeFormatter = DateFormat
+// .getTimeFormat(getApplicationContext());
+//
+// protected String formatLabel(double value, boolean isValueX) {
+// if (isValueX) {
+// // transform number to time
+// return dateTimeFormatter.format(new Date((long) value * 1000));
+// } else {
+// return super.formatLabel(value, isValueX);
+// }
+// }
+// };

@@ -246,14 +246,9 @@ public class DetailsActivity extends FragmentActivity {
 				sampleArea.setText(sensorArea);
 
 				sensorTimeMilli = System.currentTimeMillis();
-				long sensorTimeHours = TimeUnit.MILLISECONDS
-						.toHours(sensorTimeMilli);
-
-				String time = String.valueOf(sensorTimeHours);
-				Log.d("sensorTime", time);
 				// Write refreshed data into file for storage/graphing
 				FileHelper.appendFile(readFile, DustDensity, coValue,
-						humidityValue, temperatureValue, sensorTimeHours,
+						humidityValue, temperatureValue, sensorTimeMilli,
 						sensorStatus);
 			}
 
